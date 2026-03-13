@@ -24,13 +24,19 @@ The skill helps you prepare PRs by checking your work against the things that ac
 
 ## Installation
 
-Copy the `good-pr/` skill directory into your Claude Code skills location:
+Install with npx:
+
+```bash
+npx skills add adewale/good-pr
+```
+
+Or install manually by copying the skill directory:
 
 ```bash
 cp -r good-pr/ ~/.claude/skills/good-pr
 ```
 
-Or reference it directly in your project's `.claude/settings.json`.
+You can also reference it directly in your project's `.claude/settings.json`.
 
 ## Structure
 
