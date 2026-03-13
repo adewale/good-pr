@@ -1,0 +1,23 @@
+{
+  "skill_name": "good-pr",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I fixed a bug in the login form where pressing enter doesn't submit. Here's my diff:\n\n```diff\n--- a/src/components/LoginForm.tsx\n+++ b/src/components/LoginForm.tsx\n@@ -15,7 +15,9 @@ export function LoginForm() {\n   return (\n-    <div className=\"login-form\">\n+    <form className=\"login-form\" onSubmit={handleSubmit}>\n       <input type=\"email\" value={email} onChange={setEmail} />\n       <input type=\"password\" value={password} onChange={setPassword} />\n       <button onClick={handleSubmit}>Log In</button>\n-    </div>\n+    </form>\n   );\n```\n\nI want to submit this to the react-admin project. Can you review my PR?",
+      "expected_output": "Should flag: missing issue link, no repro steps, no tests added, button still has redundant onClick (should use type=submit instead), should mention test regression verification, should help draft PR description using template",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Help me write a PR description. I changed the sidebar color from blue to gray in our design system. It's my first time contributing to this repo.",
+      "expected_output": "Should ask for before/after screenshots, suggest starting with something smaller if this is truly their first contribution, help write full PR description using template, remind about checking existing color conventions and design tokens, mention building trust as first-time contributor",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I wrote a fix for a critical auth bypass vulnerability and added a test. The test passes. Here's what I have:\n\nTest:\n```js\ntest('should reject invalid tokens', () => {\n  const result = validateToken('test-token');\n  expect(result).toBeDefined();\n});\n```\n\nShould I mark this as urgent in the PR title?",
+      "expected_output": "Should flag the test as meaningless (checks result is defined, would pass with any input including valid tokens — doesn't verify rejection). Should advise against 'urgent' labeling and suggest letting maintainers triage. Should ask about repro steps for the vulnerability. Should recommend verifying test fails without the fix.",
+      "files": []
+    }
+  ]
+}
