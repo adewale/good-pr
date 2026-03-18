@@ -33,6 +33,20 @@ Your job as a contributor is to make the maintainer's life easier, not harder.
 That means doing the work to *prove* your change is correct — not just asserting
 it. The checklist below is how you do that.
 
+## Quick Navigation
+
+What does the user need help with?
+
+```
+├─ Writing a PR description     -> references/pr-template.md (blank template)
+│                                  references/pr-example.md (filled-in example)
+├─ Self-reviewing before submit -> references/review-checklist.md
+├─ Automated readiness check    -> scripts/check-pr-readiness.sh
+├─ Understanding what makes
+│  a good PR                    -> The Checklist (below)
+└─ Common mistakes to avoid     -> Anti-Patterns (below)
+```
+
 ## The Checklist
 
 Walk through each area when preparing a PR. Not every PR needs every item, but
@@ -155,6 +169,76 @@ If this is your first contribution to a project:
 
 Maintainers remember reliable contributors. A few solid small PRs buy you
 latitude for bigger changes later.
+
+## Anti-Patterns
+
+These are real mistakes that get PRs closed. Each shows the wrong way and the
+right way — learn from the contrast.
+
+### Bad vs. Good PR Description
+
+```markdown
+# NEVER — vague, no context, no evidence
+
+Fix login bug
+
+Changed the form to use onSubmit instead of onClick.
+```
+
+```markdown
+# ALWAYS — specific, linked, proven
+
+Fix crash on empty form submission (#247)
+
+## What
+Fix 500 error when saving settings with no changes.
+
+## Why
+Fixes #247. `updateSettings()` sends an empty PATCH body that the API
+rejects. ~300 errors/day in Sentry since 2.4.0.
+
+## How
+Added early return in `handleSubmit()` when no fields changed.
+
+## Testing
+- Added test in `settings.test.ts`
+- Verified test fails when guard clause is removed
+- Full suite passes (247/247)
+```
+
+### Bad vs. Good Tests
+
+```js
+// NEVER — passes with or without the fix (tests nothing)
+test('should handle invalid tokens', () => {
+  const result = validateToken('bad-token');
+  expect(result).toBeDefined();
+});
+```
+
+```js
+// ALWAYS — fails when the fix is reverted (proves the fix)
+test('should reject expired tokens with TokenExpiredError', () => {
+  const expired = createToken({ exp: Date.now() - 1000 });
+  expect(() => validateToken(expired)).toThrow(TokenExpiredError);
+});
+```
+
+### Bad vs. Good Scope
+
+```diff
+# NEVER — "drive-by refactor" mixed into a bug fix
+- const x = getData()
++ const userData = getUserData()  // renamed for clarity
++ // also reformatted this whole file with prettier
++ // also upgraded lodash while I was in here
+```
+
+```diff
+# ALWAYS — minimal diff, solves exactly one problem
+- <div className="login-form">
++ <form className="login-form" onSubmit={handleSubmit}>
+```
 
 ## How to Use This Skill
 

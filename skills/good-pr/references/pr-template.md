@@ -3,6 +3,8 @@
 Use this template when helping users draft their PR description. Fill in each
 section — if a section doesn't apply, remove it rather than writing "N/A".
 
+For a filled-in example showing what "good" looks like, see `pr-example.md`.
+
 ---
 
 ## What

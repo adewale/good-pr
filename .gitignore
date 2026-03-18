@@ -1,0 +1,9 @@
+.DS_Store
+.claude/
+.agents/
+.pi/
+.env
+__pycache__/
+*.pyc
+node_modules/
+skills-lock.json

@@ -1,0 +1,11 @@
+{
+  "name": "good-pr",
+  "description": "Help users prepare and review pull requests that maintainers actually want to merge",
+  "plugins": [
+    {
+      "name": "good-pr",
+      "source": "./",
+      "skills": ["./skills/good-pr"]
+    }
+  ]
+}

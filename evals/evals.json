@@ -5,18 +5,84 @@
       "id": 1,
       "prompt": "I fixed a bug in the login form where pressing enter doesn't submit. Here's my diff:\n\n```diff\n--- a/src/components/LoginForm.tsx\n+++ b/src/components/LoginForm.tsx\n@@ -15,7 +15,9 @@ export function LoginForm() {\n   return (\n-    <div className=\"login-form\">\n+    <form className=\"login-form\" onSubmit={handleSubmit}>\n       <input type=\"email\" value={email} onChange={setEmail} />\n       <input type=\"password\" value={password} onChange={setPassword} />\n       <button onClick={handleSubmit}>Log In</button>\n-    </div>\n+    </form>\n   );\n```\n\nI want to submit this to the react-admin project. Can you review my PR?",
       "expected_output": "Should flag: missing issue link, no repro steps, no tests added, button still has redundant onClick (should use type=submit instead), should mention test regression verification, should help draft PR description using template",
+      "assertions": [
+        {
+          "type": "content_includes",
+          "value": "onClick",
+          "description": "Flags the redundant onClick handler on the button — with onSubmit on the form, the button should use type=submit instead. A baseline model reviewing this diff is unlikely to catch this subtle redundancy."
+        },
+        {
+          "type": "content_includes_any",
+          "value": ["issue", "repro", "reproduce", "#"],
+          "description": "Asks for a linked issue or reproduction steps. Skill-specific: the checklist requires an issue link and repro steps for every bug fix PR."
+        },
+        {
+          "type": "content_includes_any",
+          "value": ["revert", "fail when", "regression guard", "fails without"],
+          "description": "Asks whether tests fail when the fix is reverted. This is the skill's litmus test for test quality — a baseline model typically just asks 'did you add tests?' without probing regression verification."
+        },
+        {
+          "type": "content_includes_any",
+          "value": ["template", "pr-template", "What", "Why", "How"],
+          "description": "Offers to help draft a PR description using the structured template sections. Skill-specific behavior."
+        }
+      ],
       "files": []
     },
     {
       "id": 2,
       "prompt": "Help me write a PR description. I changed the sidebar color from blue to gray in our design system. It's my first time contributing to this repo.",
       "expected_output": "Should ask for before/after screenshots, suggest starting with something smaller if this is truly their first contribution, help write full PR description using template, remind about checking existing color conventions and design tokens, mention building trust as first-time contributor",
+      "assertions": [
+        {
+          "type": "content_includes_any",
+          "value": ["screenshot", "before/after", "recording", "visual"],
+          "description": "Requires visual evidence for a UI change. Skill-specific: the checklist mandates screenshots for any PR touching UI. A baseline model may help write the description without flagging this."
+        },
+        {
+          "type": "content_includes_any",
+          "value": ["first contribution", "first time", "trust", "start small", "good first issue"],
+          "description": "Addresses first-time contributor dynamics — the skill has specific guidance about earning trust and starting small. A baseline model is unlikely to proactively raise this."
+        },
+        {
+          "type": "content_includes_any",
+          "value": ["design token", "convention", "existing pattern", "color system", "project style"],
+          "description": "Asks whether the color change follows the project's existing design conventions. Skill-specific: section 3 requires matching project patterns, not just making changes that 'work'."
+        },
+        {
+          "type": "content_includes_any",
+          "value": ["issue", "discussion", "discussed"],
+          "description": "Asks whether this change was discussed or linked to an issue first — the skill warns against surprising maintainers with unsolicited changes, especially as a first-time contributor."
+        }
+      ],
       "files": []
     },
     {
       "id": 3,
       "prompt": "I wrote a fix for a critical auth bypass vulnerability and added a test. The test passes. Here's what I have:\n\nTest:\n```js\ntest('should reject invalid tokens', () => {\n  const result = validateToken('test-token');\n  expect(result).toBeDefined();\n});\n```\n\nShould I mark this as urgent in the PR title?",
       "expected_output": "Should flag the test as meaningless (checks result is defined, would pass with any input including valid tokens — doesn't verify rejection). Should advise against 'urgent' labeling and suggest letting maintainers triage. Should ask about repro steps for the vulnerability. Should recommend verifying test fails without the fix.",
+      "assertions": [
+        {
+          "type": "content_includes_any",
+          "value": ["toBeDefined", "defined", "any input", "valid token", "passes with", "doesn't verify", "doesn't prove", "meaningless"],
+          "description": "Specifically identifies WHY the test is bad — toBeDefined passes for any non-undefined return, including successful validation of valid tokens. A baseline model might say 'add more tests' without diagnosing the specific flaw."
+        },
+        {
+          "type": "content_includes_any",
+          "value": ["urgent", "triage", "maintainer", "don't label", "let the maintainer"],
+          "description": "Advises against self-labeling as urgent and recommends letting maintainers triage. Skill-specific: section 5 explicitly warns against panic PRs and urgent labeling."
+        },
+        {
+          "type": "content_includes_any",
+          "value": ["revert", "fail when", "fails without", "regression", "reintroduce"],
+          "description": "Recommends verifying the test fails when the fix is reverted. This is the skill's core test quality heuristic — a baseline model is unlikely to suggest this specific verification step."
+        },
+        {
+          "type": "content_includes_any",
+          "value": ["toThrow", "reject", "expect(result).toBe(false)", "error", "unauthorized"],
+          "description": "Suggests a concrete better assertion — the test should verify rejection (throw, false, error), not just that a value exists. Skill-equipped model should provide the right-way contrast."
+        }
+      ],
       "files": []
     }
   ]
