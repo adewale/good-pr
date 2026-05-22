@@ -21,6 +21,23 @@ trust. Every piece of guidance here comes from inverting real maintainer
 frustrations — these are the things that separate contributions that get merged
 from ones that get closed.
 
+## First: Establish the Context
+
+The right advice depends entirely on who reviews this PR and who owns the
+code. Determine this before applying anything below — don't assume.
+
+- **Your own repo / solo project** — review is mostly a sanity check on
+  yourself. Skip the "earn trust" and "maintainers own every line" framing.
+  Focus on: clear description for future-you, tests that prove the fix, scope.
+- **Internal team repo (you're a co-maintainer)** — reviewers are peers, not
+  gatekeepers. Issue-linking and conventions follow *your team's* norms, which
+  may be lighter than OSS. Don't impose process the team doesn't use.
+- **External project you don't maintain** — this is the full case the
+  checklist below was written for: you're asking someone to own your code, so
+  every section applies.
+
+If you can't tell which case applies, ask the user. Don't guess.
+
 ## Why This Matters
 
 Maintainers have to *own* every line of code that gets merged. If your PR
