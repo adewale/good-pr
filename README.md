@@ -1,5 +1,7 @@
 # good-pr
 
+[![skills.sh](https://skills.sh/b/adewale/good-pr)](https://skills.sh/adewale/good-pr)
+
 A Claude Code skill that helps you craft pull requests maintainers actually want to merge.
 
 ## Origin
@@ -29,6 +31,8 @@ Install with npx:
 ```bash
 npx skills add adewale/good-pr
 ```
+
+Skills appear on skills.sh automatically after users install the repo with the skills CLI. Install counts and leaderboard rankings come from anonymous CLI telemetry; opt out with `DISABLE_TELEMETRY=1`. The repo page customization in `skills.sh.json` is picked up after the repository is seen by telemetry and the cache refreshes.
 
 Or install manually by copying the skill directory:
 

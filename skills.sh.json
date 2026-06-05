@@ -1,0 +1,11 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "Pull Requests",
+      "description": "PR preparation guidance for contributions maintainers can review and merge confidently.",
+      "skills": ["good-pr"]
+    }
+  ]
+}
