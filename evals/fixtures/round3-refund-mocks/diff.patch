@@ -1,0 +1,10 @@
+diff --git a/src/refunds.ts b/src/refunds.ts
++export async function refundPayment(id) { gateway.refund(id); queue.enqueue('refund'); }
+diff --git a/test/refunds.test.ts b/test/refunds.test.ts
++jest.mock('../src/gateway');
++jest.mock('../src/db');
++jest.mock('../src/queue');
++it('integration tested', async () => {
++  await refundPayment('p1');
++  expect(gateway.refund).toHaveBeenCalledTimes(1);
++});

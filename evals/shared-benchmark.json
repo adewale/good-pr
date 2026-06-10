@@ -1,0 +1,730 @@
+{
+  "version": 1,
+  "skill_name": "good-pr",
+  "harness": {
+    "name": "skill-eval-harness",
+    "url": "https://github.com/adewale/skill-eval-harness",
+    "version": ">=0.1.1"
+  },
+  "skill_paths": [
+    "skills/good-pr/SKILL.md"
+  ],
+  "old_skill_paths": [],
+  "variants": [
+    "with_skill",
+    "without_skill"
+  ],
+  "optional_variants": [
+    "old_skill"
+  ],
+  "split_policy": {
+    "tune": "Visible cases used during iteration. Failures may drive skill/reference edits.",
+    "holdout": "Hidden cases scored only at end-of-round or merge. Prefer prompt_ref files outside committed docs/examples.",
+    "holdback": "Examples not shown in SKILL.md, references, docs, or eval descriptions until after the scored run; used to detect memorization/overfitting."
+  },
+  "run_protocol": {
+    "paired": "Run with_skill and without_skill in the same round; optionally run old_skill from a pinned artifact/branch.",
+    "outputs": "Save outputs as runs/<case_id>/<variant>/output.md and metadata as runs/<case_id>/<variant>/metadata.json.",
+    "metadata": [
+      "elapsed_ms",
+      "input_tokens",
+      "output_tokens",
+      "total_tokens",
+      "model"
+    ],
+    "analyst_pass": "After benchmark, review saturated, flaky, non-discriminating, and with-skill-failed cases before editing the skill."
+  },
+  "notes": "",
+  "cases": [
+    {
+      "id": "pos-bugfix-no-repro",
+      "split": "tune",
+      "kind": "pr-review",
+      "prompt": "Review this bug-fix PR: the diff changes parser behavior, but the PR has no issue link, no repro steps, and no failing test evidence.",
+      "expected_behavior": [
+        "Apply PR readiness checklist and produce concrete maintainer-friendly guidance."
+      ],
+      "assertions": [
+        {
+          "name": "detect-bugfix-no-repro",
+          "type": "contains_any",
+          "values": [
+            "repro",
+            "issue",
+            "failing",
+            "revert"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Maintainer empathy",
+            "Specific reviewer concern",
+            "No cargo-cult demands"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "pos-ui-no-screenshot",
+      "split": "tune",
+      "kind": "pr-review",
+      "prompt": "Help write a PR for a UI color/layout change with no before/after screenshot.",
+      "expected_behavior": [
+        "Apply PR readiness checklist and produce concrete maintainer-friendly guidance."
+      ],
+      "assertions": [
+        {
+          "name": "detect-ui-no-screenshot",
+          "type": "contains_any",
+          "values": [
+            "screenshot",
+            "before",
+            "after",
+            "visual"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Maintainer empathy",
+            "Specific reviewer concern",
+            "No cargo-cult demands"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "pos-security-meaningless-test",
+      "split": "tune",
+      "kind": "pr-review",
+      "prompt": "Security fix PR includes `expect(result).toBeDefined()` as the only auth-bypass test, and the draft title is `[URGENT] Fix auth bypass`. Review it before I submit.",
+      "expected_behavior": [
+        "Flag the test as non-evidence, ask for targeted regression proof that fails on the vulnerable or reverted code, and handle urgency in a maintainer-friendly way without cargo-cult demands."
+      ],
+      "assertions": [
+        {
+          "name": "detect-security-meaningless-test",
+          "type": "contains_any",
+          "values": [
+            "meaningless",
+            "not meaningful",
+            "not a meaningful",
+            "not valid",
+            "not a valid",
+            "doesn't prove",
+            "does not prove",
+            "doesn't verify",
+            "only proves",
+            "false confidence",
+            "proves almost nothing",
+            "almost nothing",
+            "proves nothing",
+            "weak"
+          ]
+        },
+        {
+          "name": "requires-reverted-fix-proof",
+          "type": "contains_any",
+          "values": [
+            "fails when the fix is reverted",
+            "fail when the fix is reverted",
+            "fails without the fix",
+            "fail if the bug is reintroduced",
+            "fail when the bug is reintroduced",
+            "fail if the vulnerability is reintroduced",
+            "fail when the vulnerability is reintroduced",
+            "fail on the vulnerable",
+            "fail on the original bypass",
+            "would fail on the original bypass",
+            "revert/remove your auth fix",
+            "revert your auth fix",
+            "remove your auth fix",
+            "confirm the unauthorized test fails",
+            "confirm it fails",
+            "fails when the auth guard is reverted",
+            "auth guard is reverted",
+            "verified the regression test fails when the auth guard is reverted"
+          ]
+        },
+        {
+          "name": "asks-security-invariant",
+          "type": "contains_any",
+          "values": [
+            "401",
+            "403",
+            "unauthorized",
+            "forbidden",
+            "protected data",
+            "blocked side effect"
+          ]
+        },
+        {
+          "name": "maintainer-urgency-triage",
+          "type": "contains_any",
+          "values": [
+            "let maintainers triage",
+            "let the maintainers triage",
+            "maintainer triage",
+            "maintainers set urgency",
+            "avoid urgent",
+            "don't mark urgent",
+            "do not mark urgent",
+            "not label it urgent",
+            "do not self-label"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Diagnoses why the test is non-evidence",
+            "Asks for targeted regression proof, not broad test theater",
+            "Handles urgency and triage with maintainer empathy"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "pos-first-time-architecture",
+      "split": "tune",
+      "kind": "pr-review",
+      "prompt": "First OSS contribution: I refactored the whole architecture in a drive-by PR. How should I present it?",
+      "expected_behavior": [
+        "Apply PR readiness checklist and produce concrete maintainer-friendly guidance."
+      ],
+      "assertions": [
+        {
+          "name": "detect-first-time-architecture",
+          "type": "contains_any",
+          "values": [
+            "first",
+            "trust",
+            "scope",
+            "smaller"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Maintainer empathy",
+            "Specific reviewer concern",
+            "No cargo-cult demands"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "pos-dependency-no-rationale",
+      "split": "tune",
+      "kind": "pr-review",
+      "prompt": "Review my dependency update PR; I bumped five packages but did not explain why.",
+      "expected_behavior": [
+        "Apply PR readiness checklist and produce concrete maintainer-friendly guidance."
+      ],
+      "assertions": [
+        {
+          "name": "detect-dependency-no-rationale",
+          "type": "contains_any",
+          "values": [
+            "rationale",
+            "changelog",
+            "risk",
+            "scope"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Maintainer empathy",
+            "Specific reviewer concern",
+            "No cargo-cult demands"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "pos-docs-example-broken",
+      "split": "tune",
+      "kind": "pr-review",
+      "prompt": "Docs PR updates examples, but the example command no longer runs. Help me prepare the PR.",
+      "expected_behavior": [
+        "Apply PR readiness checklist and produce concrete maintainer-friendly guidance."
+      ],
+      "assertions": [
+        {
+          "name": "detect-docs-example-broken",
+          "type": "contains_any",
+          "values": [
+            "example",
+            "runs",
+            "verify",
+            "test"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Maintainer empathy",
+            "Specific reviewer concern",
+            "No cargo-cult demands"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "neg-tiny-typo",
+      "split": "tune",
+      "kind": "adversarial",
+      "prompt": "Review this one-line typo fix PR in docs.",
+      "expected_behavior": [
+        "Be proportionate and avoid irrelevant checklist demands."
+      ],
+      "assertions": [
+        {
+          "name": "avoid-tiny-typo",
+          "type": "contains_any",
+          "values": [
+            "overkill",
+            "no screenshot",
+            "proportionate"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Proportionality",
+            "False-positive restraint"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "neg-maintainer-internal",
+      "split": "tune",
+      "kind": "adversarial",
+      "prompt": "I maintain this internal repo; review my own PR description.",
+      "expected_behavior": [
+        "Be proportionate and avoid irrelevant checklist demands."
+      ],
+      "assertions": [
+        {
+          "name": "avoid-maintainer-internal",
+          "type": "contains_any",
+          "values": [
+            "maintainer",
+            "first-time",
+            "irrelevant",
+            "not needed"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Proportionality",
+            "False-positive restraint"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "neg-already-complete",
+      "split": "tune",
+      "kind": "adversarial",
+      "prompt": "PR includes repro steps, screenshots, and tests. Review without asking for them again.",
+      "expected_behavior": [
+        "Be proportionate and avoid irrelevant checklist demands."
+      ],
+      "assertions": [
+        {
+          "name": "avoid-already-complete",
+          "type": "contains_any",
+          "values": [
+            "already",
+            "do not ask",
+            "focus"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Proportionality",
+            "False-positive restraint"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "neg-docs-only-no-revert-test",
+      "split": "tune",
+      "kind": "adversarial",
+      "prompt": "Docs-only wording change; should I prove a test fails when reverted?",
+      "expected_behavior": [
+        "Be proportionate and avoid irrelevant checklist demands."
+      ],
+      "assertions": [
+        {
+          "name": "avoid-docs-only-no-revert-test",
+          "type": "contains_any",
+          "values": [
+            "docs-only",
+            "not the right demand",
+            "example"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Proportionality",
+            "False-positive restraint"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "trig-review-pr",
+      "split": "tune",
+      "kind": "trigger",
+      "prompt": "Trigger decision eval. User prompt: review my PR before I submit\n\nReturn exactly one label first: TRIGGER or NO_TRIGGER. Then give one short reason.",
+      "expected_behavior": [
+        "Should return TRIGGER for this skill."
+      ],
+      "assertions": [
+        {
+          "name": "expected-trigger-label",
+          "type": "regex",
+          "pattern": "(?m)^\\s*TRIGGER\\b",
+          "description": "First line must be the exact trigger decision label."
+        }
+      ],
+      "tags": [
+        "trigger"
+      ]
+    },
+    {
+      "id": "trig-pr-description",
+      "split": "tune",
+      "kind": "trigger",
+      "prompt": "Trigger decision eval. User prompt: write a PR description\n\nReturn exactly one label first: TRIGGER or NO_TRIGGER. Then give one short reason.",
+      "expected_behavior": [
+        "Should return TRIGGER for this skill."
+      ],
+      "assertions": [
+        {
+          "name": "expected-trigger-label",
+          "type": "regex",
+          "pattern": "(?m)^\\s*TRIGGER\\b",
+          "description": "First line must be the exact trigger decision label."
+        }
+      ],
+      "tags": [
+        "trigger"
+      ]
+    },
+    {
+      "id": "trig-first-oss",
+      "split": "tune",
+      "kind": "trigger",
+      "prompt": "Trigger decision eval. User prompt: first OSS contribution\n\nReturn exactly one label first: TRIGGER or NO_TRIGGER. Then give one short reason.",
+      "expected_behavior": [
+        "Should return TRIGGER for this skill."
+      ],
+      "assertions": [
+        {
+          "name": "expected-trigger-label",
+          "type": "regex",
+          "pattern": "(?m)^\\s*TRIGGER\\b",
+          "description": "First line must be the exact trigger decision label."
+        }
+      ],
+      "tags": [
+        "trigger"
+      ]
+    },
+    {
+      "id": "trig-commit-message",
+      "split": "tune",
+      "kind": "trigger",
+      "prompt": "Trigger decision eval. User prompt: write a commit message\n\nReturn exactly one label first: TRIGGER or NO_TRIGGER. Then give one short reason.",
+      "expected_behavior": [
+        "Should return NO_TRIGGER for this skill."
+      ],
+      "assertions": [
+        {
+          "name": "expected-trigger-label",
+          "type": "regex",
+          "pattern": "(?m)^\\s*NO_TRIGGER\\b",
+          "description": "First line must be the exact trigger decision label."
+        }
+      ],
+      "tags": [
+        "trigger"
+      ]
+    },
+    {
+      "id": "trig-architecture-review",
+      "split": "tune",
+      "kind": "trigger",
+      "prompt": "Trigger decision eval. User prompt: review this code architecture\n\nReturn exactly one label first: TRIGGER or NO_TRIGGER. Then give one short reason.",
+      "expected_behavior": [
+        "Should return NO_TRIGGER for this skill."
+      ],
+      "assertions": [
+        {
+          "name": "expected-trigger-label",
+          "type": "regex",
+          "pattern": "(?m)^\\s*NO_TRIGGER\\b",
+          "description": "First line must be the exact trigger decision label."
+        }
+      ],
+      "tags": [
+        "trigger"
+      ]
+    },
+    {
+      "id": "trig-triage-issues",
+      "split": "tune",
+      "kind": "trigger",
+      "prompt": "Trigger decision eval. User prompt: triage these GitHub issues\n\nReturn exactly one label first: TRIGGER or NO_TRIGGER. Then give one short reason.",
+      "expected_behavior": [
+        "Should return NO_TRIGGER for this skill."
+      ],
+      "assertions": [
+        {
+          "name": "expected-trigger-label",
+          "type": "regex",
+          "pattern": "(?m)^\\s*NO_TRIGGER\\b",
+          "description": "First line must be the exact trigger decision label."
+        }
+      ],
+      "tags": [
+        "trigger"
+      ]
+    },
+    {
+      "id": "holdout-oss-security-patch-01",
+      "split": "holdout",
+      "kind": "pr-review",
+      "scenario": "Hidden real OSS security patch archetype",
+      "prompt_ref": "holdout/oss-security-patch-01.txt",
+      "expected_behavior": [
+        "Review evidence, tests, maintainer triage, and scope."
+      ],
+      "assertions": [
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Security test quality",
+            "Urgency handling"
+          ]
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "holdback-docs-only-pr-01",
+      "split": "holdback",
+      "kind": "pr-review",
+      "scenario": "Private holdback case. Exact scenario and answer key live outside committed docs/eval descriptions.",
+      "prompt_ref": "holdback/docs-only-pr-01.txt",
+      "answer_ref": "holdback/answers/docs-only-pr-01.json",
+      "expected_behavior": [
+        "Private holdback scoring: load prompt and answer key only for the scored run, then reveal after scoring if desired."
+      ],
+      "assertions": [
+        {
+          "name": "private-holdback-review",
+          "type": "judge",
+          "rubric": [
+            "Use the private answer key; do not rely on public manifest wording."
+          ]
+        }
+      ],
+      "tags": [
+        "holdback-private"
+      ]
+    },
+    {
+      "id": "pos-mock-only-integration-claim",
+      "split": "tune",
+      "kind": "pr-review",
+      "prompt": "Review a PR that claims “integration tested” because it mocks the payment gateway, database, and queue, then asserts only that `processPayment()` was called once. The PR changes refund behavior.",
+      "expected_behavior": [
+        "Identify mock-only integration claim as weak.",
+        "Ask for public behavior/refund state assertions and a regression check that would fail on the old behavior."
+      ],
+      "assertions": [
+        {
+          "name": "flags-mock-only-integration",
+          "type": "contains_any",
+          "values": [
+            "mock-only",
+            "mocks every boundary",
+            "not integration",
+            "mocked the payment gateway"
+          ]
+        },
+        {
+          "name": "requires-refund-behavior",
+          "type": "contains_any",
+          "values": [
+            "refund",
+            "state",
+            "observable behavior",
+            "public behavior"
+          ]
+        },
+        {
+          "name": "requires-regression-proof",
+          "type": "contains_any",
+          "values": [
+            "fail on the old behavior",
+            "fails without the fix",
+            "reverted",
+            "bug is reintroduced"
+          ]
+        },
+        {
+          "name": "round-2-qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Maintainer-friendly specificity",
+            "No cargo-cult demands",
+            "Regression proof"
+          ]
+        }
+      ],
+      "tags": [
+        "round-2",
+        "anthropic-gap",
+        "assertion-quality"
+      ]
+    },
+    {
+      "id": "round3-fixture-refund-mock-pr",
+      "split": "tune",
+      "kind": "pr-review",
+      "files": [
+        "fixtures/round3-refund-mocks/diff.patch"
+      ],
+      "prompt": "Review the attached PR diff before submission. The author claims it is integration-tested.",
+      "expected_behavior": [
+        "Challenge mock-only integration claim.",
+        "Ask for observable refund state/regression proof and maintainer-friendly PR readiness guidance."
+      ],
+      "assertions": [
+        {
+          "name": "flags-mock-only",
+          "type": "contains_any",
+          "values": [
+            "mock-only",
+            "mocks every boundary",
+            "not integration",
+            "mocked"
+          ]
+        },
+        {
+          "name": "requires-observable-refund",
+          "type": "contains_any",
+          "values": [
+            "refund state",
+            "observable behavior",
+            "database state",
+            "public behavior",
+            "persistence/status changes",
+            "status changes",
+            "queue behavior",
+            "queue enqueue behavior",
+            "paymentId"
+          ]
+        },
+        {
+          "name": "requires-regression-proof",
+          "type": "contains_any",
+          "values": [
+            "fail on the old behavior",
+            "reverted",
+            "bug is reintroduced",
+            "without the fix"
+          ]
+        },
+        {
+          "name": "round-3-qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Specific to diff",
+            "Maintainer-friendly",
+            "Regression proof"
+          ]
+        }
+      ],
+      "tags": [
+        "round-3",
+        "fixture-backed",
+        "audit-manifest"
+      ]
+    }
+  ],
+  "ablations": [
+    {
+      "id": "no-reverted-fix-litmus",
+      "removed_component": "reverted-fix test litmus",
+      "expected_regressions": [
+        "Accepts tests that pass but do not catch regressions."
+      ],
+      "applies_to_cases": []
+    },
+    {
+      "id": "no-trust-section",
+      "removed_component": "first-time contributor/trust section",
+      "expected_regressions": [
+        "Gives poor advice for drive-by OSS contributions."
+      ],
+      "applies_to_cases": []
+    },
+    {
+      "id": "no-visual-evidence",
+      "removed_component": "visual evidence rule",
+      "expected_regressions": [
+        "Misses screenshots/recordings for UI PRs."
+      ],
+      "applies_to_cases": []
+    },
+    {
+      "id": "no-template",
+      "removed_component": "PR template reference",
+      "expected_regressions": [
+        "Descriptions lose standalone What/Why/How structure."
+      ],
+      "applies_to_cases": []
+    },
+    {
+      "id": "no-focused-scope",
+      "removed_component": "focused scope guidance",
+      "expected_regressions": [
+        "Encourages broad multi-concern PRs."
+      ],
+      "applies_to_cases": []
+    }
+  ]
+}

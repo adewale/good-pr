@@ -121,6 +121,21 @@ If a test passes both with and without the fix, it tests nothing. Maintainers
 *will* check this — they'll reintroduce the bug to see if your test catches it.
 If it doesn't, the PR loses all credibility.
 
+For security, authorization, data-exposure, or permission bugs, make the
+evidence especially concrete without turning it into checklist theater. Ask for
+one targeted negative regression test that asserts the security invariant and
+would fail on the vulnerable or reverted code. Good evidence usually includes:
+
+- The denied path: `401`/`403`, thrown auth error, or blocked side effect
+- No protected data leaked and no unauthorized state change performed
+- A positive control showing the authorized path still works
+- A short PR testing note with the command run and "verified this test fails
+  when the fix is reverted" — or a brief reason if that check is not practical
+
+Do **not** ask for broad security theater: no full exploit write-up,
+screenshots, or unrelated suite expansion unless the project asks for it. Keep
+the ask scoped to evidence the maintainer can review quickly.
+
 Mention this verification in the PR description:
 
 ```
@@ -141,8 +156,10 @@ if each individual change is correct, the combined risk multiplies.
   so I also manually tested login and signup flows")
 - If your fix touches shared code, explain why and what you verified
 
-Never label a PR as urgent or demand rollbacks unless you have clear evidence of
-widespread breakage — and even then, let the maintainers triage. Panic PRs that
+Don't self-assign emergency labels or demand rollbacks unless you have clear
+evidence of widespread breakage or the project asks contributors to flag
+severity. For security fixes, use a neutral, specific title, state concrete
+impact/evidence, and let maintainers choose urgency and triage. Panic PRs that
 break more than they fix destroy trust faster than anything.
 
 ### 6. A Description That Stands Alone
