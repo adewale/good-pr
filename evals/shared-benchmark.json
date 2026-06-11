@@ -65,7 +65,13 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "pull-request-quality",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome",
+        "style"
+      ]
     },
     {
       "id": "pos-ui-no-screenshot",
@@ -96,7 +102,13 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "pull-request-quality",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome",
+        "style"
+      ]
     },
     {
       "id": "pos-security-meaningless-test",
@@ -188,7 +200,13 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "pull-request-quality",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome",
+        "style"
+      ]
     },
     {
       "id": "pos-first-time-architecture",
@@ -219,7 +237,13 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "pull-request-quality",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome",
+        "style"
+      ]
     },
     {
       "id": "pos-dependency-no-rationale",
@@ -250,7 +274,13 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "pull-request-quality",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome",
+        "style"
+      ]
     },
     {
       "id": "pos-docs-example-broken",
@@ -281,7 +311,13 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "pull-request-quality",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome",
+        "style"
+      ]
     },
     {
       "id": "neg-tiny-typo",
@@ -310,7 +346,13 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "pull-request-quality",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome",
+        "style"
+      ]
     },
     {
       "id": "neg-maintainer-internal",
@@ -340,7 +382,13 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "pull-request-quality",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome",
+        "style"
+      ]
     },
     {
       "id": "neg-already-complete",
@@ -369,7 +417,13 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "pull-request-quality",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome",
+        "style"
+      ]
     },
     {
       "id": "neg-docs-only-no-revert-test",
@@ -398,7 +452,13 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "pull-request-quality",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome",
+        "style"
+      ]
     },
     {
       "id": "trig-review-pr",
@@ -418,7 +478,13 @@
       ],
       "tags": [
         "trigger"
-      ]
+      ],
+      "domain": "pull-request-quality",
+      "difficulty": "core",
+      "success_goals": [
+        "trigger"
+      ],
+      "trigger_type": "implicit"
     },
     {
       "id": "trig-pr-description",
@@ -438,7 +504,13 @@
       ],
       "tags": [
         "trigger"
-      ]
+      ],
+      "domain": "pull-request-quality",
+      "difficulty": "core",
+      "success_goals": [
+        "trigger"
+      ],
+      "trigger_type": "implicit"
     },
     {
       "id": "trig-first-oss",
@@ -458,7 +530,13 @@
       ],
       "tags": [
         "trigger"
-      ]
+      ],
+      "domain": "pull-request-quality",
+      "difficulty": "core",
+      "success_goals": [
+        "trigger"
+      ],
+      "trigger_type": "implicit"
     },
     {
       "id": "trig-commit-message",
@@ -478,7 +556,13 @@
       ],
       "tags": [
         "trigger"
-      ]
+      ],
+      "domain": "pull-request-quality",
+      "difficulty": "core",
+      "success_goals": [
+        "trigger"
+      ],
+      "trigger_type": "negative-near-miss"
     },
     {
       "id": "trig-architecture-review",
@@ -498,7 +582,13 @@
       ],
       "tags": [
         "trigger"
-      ]
+      ],
+      "domain": "pull-request-quality",
+      "difficulty": "core",
+      "success_goals": [
+        "trigger"
+      ],
+      "trigger_type": "negative-near-miss"
     },
     {
       "id": "trig-triage-issues",
@@ -518,7 +608,13 @@
       ],
       "tags": [
         "trigger"
-      ]
+      ],
+      "domain": "pull-request-quality",
+      "difficulty": "core",
+      "success_goals": [
+        "trigger"
+      ],
+      "trigger_type": "negative-near-miss"
     },
     {
       "id": "holdout-oss-security-patch-01",
@@ -539,7 +635,13 @@
           ]
         }
       ],
-      "tags": []
+      "tags": [],
+      "domain": "pull-request-quality",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome",
+        "style"
+      ]
     },
     {
       "id": "holdback-docs-only-pr-01",
@@ -562,6 +664,12 @@
       ],
       "tags": [
         "holdback-private"
+      ],
+      "domain": "pull-request-quality",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome",
+        "style"
       ]
     },
     {
@@ -618,6 +726,12 @@
         "round-2",
         "anthropic-gap",
         "assertion-quality"
+      ],
+      "domain": "pull-request-quality",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome",
+        "style"
       ]
     },
     {
@@ -695,6 +809,12 @@
         "round-3",
         "fixture-backed",
         "audit-manifest"
+      ],
+      "domain": "pull-request-quality",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome",
+        "style"
       ]
     }
   ],
