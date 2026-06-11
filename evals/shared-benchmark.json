@@ -4,7 +4,7 @@
   "harness": {
     "name": "skill-eval-harness",
     "url": "https://github.com/adewale/skill-eval-harness",
-    "version": ">=0.4.0"
+    "version": ">=0.4.1"
   },
   "skill_paths": [
     "skills/good-pr/SKILL.md"
@@ -198,6 +198,49 @@
             "Asks for targeted regression proof, not broad test theater",
             "Handles urgency and triage with maintainer empathy"
           ]
+        },
+        {
+          "name": "with-skill-trace-loads-skill",
+          "type": "skill_invoked",
+          "expected": true,
+          "variants": [
+            "with_skill"
+          ]
+        },
+        {
+          "name": "without-skill-trace-omits-skill",
+          "type": "skill_invoked",
+          "expected": false,
+          "variants": [
+            "without_skill"
+          ]
+        },
+        {
+          "name": "trace-command-budget",
+          "type": "command_count_le",
+          "max": 12,
+          "variants": [
+            "with_skill",
+            "without_skill"
+          ]
+        },
+        {
+          "name": "trace-time-budget",
+          "type": "elapsed_seconds_le",
+          "max": 90,
+          "variants": [
+            "with_skill",
+            "without_skill"
+          ]
+        },
+        {
+          "name": "trace-token-budget",
+          "type": "total_tokens_le",
+          "max": 100000,
+          "variants": [
+            "with_skill",
+            "without_skill"
+          ]
         }
       ],
       "tags": [],
@@ -205,7 +248,9 @@
       "difficulty": "extended",
       "success_goals": [
         "outcome",
-        "style"
+        "style",
+        "process",
+        "efficiency"
       ]
     },
     {
