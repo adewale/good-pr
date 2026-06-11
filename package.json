@@ -1,0 +1,35 @@
+{
+  "name": "good-pr",
+  "version": "0.1.1",
+  "private": true,
+  "license": "MIT",
+  "description": "Agent Skill for preparing and reviewing pull requests maintainers can merge confidently.",
+  "keywords": [
+    "agent-skills",
+    "codex",
+    "opencode",
+    "pi",
+    "gemini",
+    "claude-code"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adewale/good-pr.git"
+  },
+  "homepage": "https://github.com/adewale/good-pr#readme",
+  "skill": {
+    "entry": "skills/good-pr/SKILL.md",
+    "harnesses": [
+      "codex",
+      "opencode",
+      "pi",
+      "gemini",
+      "claude-code"
+    ]
+  },
+  "pi": {
+    "skills": [
+      "./skills"
+    ]
+  }
+}

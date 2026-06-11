@@ -12,6 +12,7 @@ description: >
   or when they want a pre-submission sanity check. Even if the user doesn't
   explicitly mention "PR" — if they're packaging a code change for someone else
   to review, this skill applies.
+compatibility: Agent Skills clients including Codex, OpenCode, Pi, Gemini CLI, and Claude Code.
 ---
 
 # Good PR

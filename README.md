@@ -2,7 +2,7 @@
 
 [![skills.sh](https://skills.sh/b/adewale/good-pr)](https://skills.sh/adewale/good-pr)
 
-A Claude Code skill that helps you craft pull requests maintainers actually want to merge.
+An Agent Skill that helps you craft pull requests maintainers actually want to merge.
 
 ## Origin
 
@@ -34,10 +34,22 @@ npx skills add adewale/good-pr
 
 Skills appear on skills.sh automatically after users install the repo with the skills CLI. Install counts and leaderboard rankings come from anonymous CLI telemetry; opt out with `DISABLE_TELEMETRY=1`. The repo page customization in `skills.sh.json` is picked up after the repository is seen by telemetry and the cache refreshes.
 
+## Agent compatibility
+
+The installable skill directory is `skills/good-pr`. It uses the Agent Skills `SKILL.md` format and is configured for Codex, OpenCode, Pi, Gemini CLI, and Claude Code.
+
+| Agent/client | Install or use |
+|---|---|
+| Codex | `cp -R skills/good-pr ~/.codex/skills/good-pr` |
+| OpenCode | `cp -R skills/good-pr ~/.config/opencode/skills/good-pr` or use `.opencode/skills/good-pr` in a project |
+| Pi | `pi install https://github.com/adewale/good-pr` or `pi --skill skills/good-pr` |
+| Gemini CLI | `gemini skills install https://github.com/adewale/good-pr --path skills/good-pr` or copy to `.gemini/skills/good-pr` |
+| Claude Code | `npx skills add adewale/good-pr` or copy to `.claude/skills/good-pr` |
+
 Or install manually by copying the skill directory:
 
 ```bash
-cp -r good-pr/ ~/.claude/skills/good-pr
+cp -r skills/good-pr ~/.claude/skills/good-pr
 ```
 
 You can also reference it directly in your project's `.claude/settings.json`.
@@ -45,7 +57,7 @@ You can also reference it directly in your project's `.claude/settings.json`.
 ## Structure
 
 ```
-good-pr/
+skills/good-pr/
 ├── SKILL.md                      # Main skill instructions
 ├── references/
 │   ├── pr-template.md            # Fill-in PR description template
@@ -56,7 +68,7 @@ good-pr/
 
 ## Usage
 
-Once installed, the skill activates when you ask Claude Code for help with pull requests:
+Once installed, the skill activates when you ask your coding agent for help with pull requests:
 
 - "Review my PR before I submit it"
 - "Help me write a PR description for this diff"
@@ -66,13 +78,13 @@ Once installed, the skill activates when you ask Claude Code for help with pull 
 You can also run the readiness check script directly:
 
 ```bash
-bash good-pr/scripts/check-pr-readiness.sh main
+bash skills/good-pr/scripts/check-pr-readiness.sh main
 ```
 
 ## Credits
 
 - Original insight: [@lukeparkerdev](https://x.com/lukeparkerdev) — [tweet](https://x.com/lukeparkerdev/status/2032300518010470555)
-- Skill implementation: Built with [Claude Code](https://claude.ai/claude-code)
+- Skill implementation: Agent Skills-compatible instructions, tested across the shared skill eval harness
 
 ## License
 
