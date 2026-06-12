@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- Visual evidence provenance guidance (inspired by beautiful-mermaid PR #22):
+  caption each before/after pair with the specific defect it demonstrates,
+  prefer generated artifacts rendered from base commit vs. branch when the
+  project renders output programmatically, and include the regeneration
+  command — in `SKILL.md` section 2, `pr-template.md`, and
+  `review-checklist.md`
+- Benchmark tune case `pos-renderer-evidence-provenance` and ablation
+  `no-evidence-provenance` in `evals/shared-benchmark.json`
+
 ## [0.1.0] - 2026-03-13
 
 ### Added

@@ -60,7 +60,7 @@ fi
 # Check 6: UI files changed (screenshots needed?)
 UI_FILES=$(git diff "$BASE"...HEAD --name-only | grep -iE '\.(jsx|tsx|vue|svelte|css|scss|html|erb)$' | wc -l | tr -d ' ')
 if [ "$UI_FILES" -gt 0 ]; then
-    echo "$WARN  $UI_FILES UI-related files changed — include before/after screenshots in your PR"
+    echo "$WARN  $UI_FILES UI-related files changed — include captioned before/after screenshots in your PR"
 else
     echo "$PASS  No UI files changed"
 fi

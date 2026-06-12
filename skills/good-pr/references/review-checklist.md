@@ -22,6 +22,11 @@ and check it off or note why it doesn't apply.
 ## Visual Changes (if applicable)
 
 - [ ] **Before/after included** — screenshots or recordings in PR description
+- [ ] **Each pair captioned** — text states the specific defect or change the
+      images demonstrate
+- [ ] **Evidence is reproducible** — if the project renders output
+      programmatically, images are generated from base commit vs. your branch
+      and the regeneration command is noted
 - [ ] **Multiple states shown** — empty, loading, error, populated
 - [ ] **Responsive checked** — different viewport sizes if relevant
 
