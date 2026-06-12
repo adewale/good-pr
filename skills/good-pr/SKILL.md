@@ -91,6 +91,21 @@ your job.
 This is the single easiest thing to include and the most common thing people
 skip. It takes 30 seconds and saves the reviewer minutes of context-building.
 
+Make the evidence trustworthy, not just present:
+
+- **Caption each before/after pair** with the specific defect it demonstrates
+  ("label no longer overlaps the container border") — the image should confirm
+  a claim, not make the reviewer play spot-the-difference
+- **Prefer generated artifacts over hand-taken screenshots** when the project
+  renders output programmatically (diagramming, charting, PDF/image pipelines):
+  render the "before" from the base commit and the "after" from your branch, so
+  there's no doubt the evidence matches the code in the PR
+- **Include the regeneration command** (e.g. `npm run render-examples`) so a
+  skeptical reviewer can rebuild the evidence instead of trusting attachments
+
+For ordinary UI work a hand-taken screenshot is fine — don't build a render
+pipeline just to fix a button color.
+
 ### 3. Code That Fits
 
 Study the codebase before contributing. A PR that "works" but requires a full
@@ -272,7 +287,9 @@ When a user asks for help with a PR:
    starting point and fill it in together
 5. **Probe the tests** — if they have tests, ask: "does this test fail when
    you revert the fix?" If they haven't checked, tell them to check
-6. **Visual changes?** — remind them about before/after evidence
+6. **Visual changes?** — remind them about before/after evidence; if the
+   project renders output programmatically, suggest generated artifacts with
+   captions and a regeneration command
 7. **Be honest** — it's better to tell someone their PR needs work before they
    submit it than to let them waste a maintainer's time and damage their
    reputation in the project

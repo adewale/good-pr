@@ -40,7 +40,10 @@ story. -->
 ## Screenshots / Recordings
 
 <!-- Required for any visual changes. Delete this section entirely if the PR
-has no UI impact. -->
+has no UI impact. Caption each before/after pair with the specific defect it
+demonstrates, so the reviewer knows what to look at. If the project renders
+output programmatically, generate the "before" from the base commit and the
+"after" from your branch, and include the command to regenerate them. -->
 
 **Before:**
 
@@ -49,6 +52,9 @@ has no UI impact. -->
 **After:**
 
 <!-- screenshot or recording -->
+
+<!-- For generated artifacts: note how to reproduce them, e.g.
+"Regenerate with `npm run render-examples` (before: <base sha>, after: this branch)" -->
 
 ## Risk
 

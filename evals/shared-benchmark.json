@@ -861,6 +861,126 @@
         "outcome",
         "style"
       ]
+    },
+    {
+      "id": "pos-renderer-evidence-provenance",
+      "split": "tune",
+      "kind": "pr-review",
+      "prompt": "My PR fixes a label-overlap bug in our open-source SVG chart renderer. For visual evidence I attached two screenshots I took of the demo page on my laptop — one from before my change and one from after. Is that good enough, or should I do anything else with the visual evidence before submitting?",
+      "expected_behavior": [
+        "Recommend generating the before/after images from the renderer itself (base commit vs. branch) rather than hand-captured demo-page screenshots.",
+        "Recommend captioning each pair with the specific defect it demonstrates.",
+        "Recommend including the command to regenerate the artifacts so reviewers can reproduce the evidence."
+      ],
+      "assertions": [
+        {
+          "name": "suggests-generated-provenance",
+          "type": "contains_any",
+          "values": [
+            "base commit",
+            "base branch",
+            "generated from",
+            "generate the",
+            "generate them",
+            "directly from the renderer",
+            "straight from the renderer",
+            "re-render",
+            "programmatically"
+          ]
+        },
+        {
+          "name": "suggests-captions",
+          "type": "contains_any",
+          "values": [
+            "caption",
+            "what to look",
+            "spot-the-difference",
+            "spot the difference",
+            "label each pair",
+            "describe what each"
+          ]
+        },
+        {
+          "name": "suggests-regeneration-command",
+          "type": "contains_any",
+          "values": [
+            "regenerate",
+            "regeneration",
+            "reproduce the evidence",
+            "rebuild the evidence",
+            "command to generate",
+            "command that generates"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Recommends reproducible, commit-pinned visual evidence without demanding new infrastructure",
+            "Keeps the ask proportionate to a rendering-engine project",
+            "Maintainer empathy"
+          ]
+        }
+      ],
+      "tags": [
+        "round-4",
+        "evidence-provenance"
+      ],
+      "domain": "pull-request-quality",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome",
+        "style"
+      ]
+    },
+    {
+      "id": "neg-ordinary-ui-no-artifact-demand",
+      "split": "tune",
+      "kind": "adversarial",
+      "prompt": "I fixed a button color on our marketing site — changed it from gray to blue — and I already have a before/after screenshot I took on my laptop. Do I need to do anything else for the visual evidence?",
+      "expected_behavior": [
+        "Accept the hand-taken screenshot as sufficient for an ordinary UI change.",
+        "Do not demand commit-pinned generated artifacts or a regeneration command for a trivial color change."
+      ],
+      "assertions": [
+        {
+          "name": "accepts-screenshot",
+          "type": "contains_any",
+          "values": [
+            "fine",
+            "sufficient",
+            "enough",
+            "good to go",
+            "all you need",
+            "exactly right",
+            "no need to"
+          ]
+        },
+        {
+          "name": "no-artifact-overdemand",
+          "type": "not_regex",
+          "pattern": "(?i)(from the base commit|regeneration command|commit-pinned|re-render the before)",
+          "description": "Must not demand commit-pinned generated artifacts for a trivial UI change — the provenance guidance is scoped to programmatically rendered output."
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Proportionality",
+            "False-positive restraint"
+          ]
+        }
+      ],
+      "tags": [
+        "round-4",
+        "evidence-provenance"
+      ],
+      "domain": "pull-request-quality",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome",
+        "style"
+      ]
     }
   ],
   "ablations": [
@@ -887,6 +1007,16 @@
         "Misses screenshots/recordings for UI PRs."
       ],
       "applies_to_cases": []
+    },
+    {
+      "id": "no-evidence-provenance",
+      "removed_component": "visual evidence provenance guidance (captions, generated artifacts from base commit vs. branch, regeneration command)",
+      "expected_regressions": [
+        "Accepts hand-taken, uncaptioned screenshots for renderer projects without asking for reproducible, commit-pinned artifacts."
+      ],
+      "applies_to_cases": [
+        "pos-renderer-evidence-provenance"
+      ]
     },
     {
       "id": "no-template",
