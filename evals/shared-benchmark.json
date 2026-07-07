@@ -47,13 +47,9 @@
       "assertions": [
         {
           "name": "detect-bugfix-no-repro",
-          "type": "contains_any",
-          "values": [
-            "repro",
-            "issue",
-            "failing",
-            "revert"
-          ]
+          "type": "regex",
+          "pattern": "(?is)(pre[- ]fix failure|fails? before the fix|reproducing command|minimal reproduction|regression test|prove the fix works)",
+          "description": "Requires concrete regression/reproduction evidence, not a single incidental keyword."
         },
         {
           "name": "qualitative-review",
@@ -86,11 +82,9 @@
           "name": "detect-ui-no-screenshot",
           "type": "contains_any",
           "values": [
-            "screenshot",
-            "before",
-            "after",
             "visual"
-          ]
+          ],
+          "description": "Prompt-echoed values removed by leakage cleanup."
         },
         {
           "name": "qualitative-review",
@@ -266,11 +260,11 @@
           "name": "detect-first-time-architecture",
           "type": "contains_any",
           "values": [
-            "first",
             "trust",
             "scope",
             "smaller"
-          ]
+          ],
+          "description": "Prompt-echoed values removed by leakage cleanup."
         },
         {
           "name": "qualitative-review",
@@ -340,11 +334,10 @@
           "name": "detect-docs-example-broken",
           "type": "contains_any",
           "values": [
-            "example",
-            "runs",
             "verify",
             "test"
-          ]
+          ],
+          "description": "Prompt-echoed values removed by leakage cleanup."
         },
         {
           "name": "qualitative-review",
@@ -483,10 +476,10 @@
           "name": "avoid-docs-only-no-revert-test",
           "type": "contains_any",
           "values": [
-            "docs-only",
             "not the right demand",
             "example"
-          ]
+          ],
+          "description": "Prompt-echoed values removed by leakage cleanup."
         },
         {
           "name": "qualitative-review",
@@ -741,11 +734,11 @@
           "name": "requires-refund-behavior",
           "type": "contains_any",
           "values": [
-            "refund",
             "state",
             "observable behavior",
             "public behavior"
-          ]
+          ],
+          "description": "Prompt-echoed values removed by leakage cleanup."
         },
         {
           "name": "requires-regression-proof",
@@ -988,51 +981,151 @@
       "id": "no-reverted-fix-litmus",
       "removed_component": "reverted-fix test litmus",
       "expected_regressions": [
-        "Accepts tests that pass but do not catch regressions."
+        {
+          "summary": "Weak/security tests are accepted without reverted-fix proof.",
+          "cases": [
+            "pos-security-meaningless-test",
+            "round3-fixture-refund-mock-pr"
+          ],
+          "assertions": [
+            "requires-reverted-fix-proof",
+            "requires-regression-proof",
+            "fixture-script-oracle"
+          ]
+        }
       ],
-      "applies_to_cases": []
+      "applies_to_cases": [],
+      "mechanism": "section",
+      "class": "instructions",
+      "target": {
+        "skill_root": "skills/good-pr/SKILL.md",
+        "heading": "### 4. Tests That Prove the Fix"
+      },
+      "notes": "Materialized removal: runner-visible skill tree is altered by the declared mechanism/target."
     },
     {
       "id": "no-trust-section",
       "removed_component": "first-time contributor/trust section",
       "expected_regressions": [
-        "Gives poor advice for drive-by OSS contributions."
+        {
+          "summary": "First-time contributor cases lose trust/small-scope guidance.",
+          "cases": [
+            "pos-first-time-architecture"
+          ],
+          "assertions": [
+            "detect-first-time-architecture"
+          ]
+        }
       ],
-      "applies_to_cases": []
+      "applies_to_cases": [],
+      "mechanism": "section",
+      "class": "instructions",
+      "target": {
+        "skill_root": "skills/good-pr/SKILL.md",
+        "heading": "### 7. Trust Is Earned"
+      },
+      "notes": "Materialized removal: runner-visible skill tree is altered by the declared mechanism/target."
     },
     {
       "id": "no-visual-evidence",
       "removed_component": "visual evidence rule",
       "expected_regressions": [
-        "Misses screenshots/recordings for UI PRs."
+        {
+          "summary": "UI PRs no longer require before/after evidence.",
+          "cases": [
+            "pos-ui-no-screenshot"
+          ],
+          "assertions": [
+            "detect-ui-no-screenshot"
+          ]
+        }
       ],
-      "applies_to_cases": []
+      "applies_to_cases": [],
+      "mechanism": "section",
+      "class": "instructions",
+      "target": {
+        "skill_root": "skills/good-pr/SKILL.md",
+        "heading": "### 2. Visual Evidence"
+      },
+      "notes": "Materialized removal: runner-visible skill tree is altered by the declared mechanism/target."
     },
     {
       "id": "no-evidence-provenance",
       "removed_component": "visual evidence provenance guidance (captions, generated artifacts from base commit vs. branch, regeneration command)",
       "expected_regressions": [
-        "Accepts hand-taken, uncaptioned screenshots for renderer projects without asking for reproducible, commit-pinned artifacts."
+        {
+          "summary": "Renderer evidence loses caption/regeneration/provenance requirements.",
+          "cases": [
+            "pos-renderer-evidence-provenance"
+          ],
+          "assertions": [
+            "suggests-generated-provenance",
+            "suggests-captions",
+            "suggests-regeneration-command"
+          ]
+        }
       ],
       "applies_to_cases": [
         "pos-renderer-evidence-provenance"
-      ]
+      ],
+      "mechanism": "list_item",
+      "class": "instructions",
+      "target": {
+        "skill_root": "skills/good-pr/SKILL.md",
+        "section": "### 2. Visual Evidence",
+        "contains": [
+          "regeneration command"
+        ]
+      },
+      "notes": "Materialized removal: runner-visible skill tree is altered by the declared mechanism/target."
     },
     {
       "id": "no-template",
       "removed_component": "PR template reference",
       "expected_regressions": [
-        "Descriptions lose standalone What/Why/How structure."
+        {
+          "summary": "PR descriptions lose standalone What/Why/How structure.",
+          "cases": [
+            "pos-docs-example-broken"
+          ],
+          "assertions": [
+            "detect-docs-example-broken"
+          ]
+        }
       ],
-      "applies_to_cases": []
+      "applies_to_cases": [],
+      "notes": "Materialized removal: runner-visible skill tree is altered by the declared mechanism/target.",
+      "mechanism": "patch",
+      "class": "instructions",
+      "target": {
+        "skill_root": "skills/good-pr/SKILL.md",
+        "patch": "evals/ablations/no-template.patch"
+      }
     },
     {
       "id": "no-focused-scope",
       "removed_component": "focused scope guidance",
       "expected_regressions": [
-        "Encourages broad multi-concern PRs."
+        {
+          "summary": "Broad/low-trust changes are not pushed toward smaller scope.",
+          "cases": [
+            "pos-first-time-architecture",
+            "neg-tiny-typo"
+          ],
+          "assertions": [
+            "detect-first-time-architecture",
+            "avoid-tiny-typo"
+          ]
+        }
       ],
-      "applies_to_cases": []
+      "applies_to_cases": [],
+      "mechanism": "section",
+      "class": "instructions",
+      "target": {
+        "skill_root": "skills/good-pr/SKILL.md",
+        "heading": "### 5. Scoped and Safe"
+      },
+      "notes": "Materialized removal: runner-visible skill tree is altered by the declared mechanism/target."
     }
   ]
 }

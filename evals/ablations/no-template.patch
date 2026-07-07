@@ -1,0 +1,11 @@
+@@ -186,7 +186,0 @@
+-See `references/pr-template.md` for a fill-in template. The key sections:
+-
+-- **What** — one-sentence summary
+-- **Why** — link to issue, brief root cause explanation
+-- **How** — approach taken, alternatives considered
+-- **Testing** — what you tested, how, and evidence it works
+-- **Risk** — what could go wrong and how you mitigated it
+@@ -286,2 +286,0 @@
+-4. **Help write the description** — use `references/pr-template.md` as a
+-   starting point and fill it in together
