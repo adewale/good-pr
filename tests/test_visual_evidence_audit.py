@@ -24,7 +24,13 @@ HEAD_SHA = "2" * 40
 def generated_body(before_ref: str = BASE_SHA, after_ref: str = HEAD_SHA) -> str:
     return f"""## Visual evidence
 
-Baseline commit `{BASE_SHA}`; current commit `{HEAD_SHA}`.
+Claim: the label clears the container border without moving the arrow.
+
+Input/fixture: `fixtures/label-overlap.json` with the same renderer config at both revisions.
+
+Baseline SHA: `{BASE_SHA}`
+
+Current SHA: `{HEAD_SHA}`
 
 | Before | After | Why | What to inspect |
 |---|---|---|---|
@@ -32,9 +38,9 @@ Baseline commit `{BASE_SHA}`; current commit `{HEAD_SHA}`.
 
 Regenerate with `python3 scripts/render-evidence.py`.
 
-## Testing
+Independent check: `tests/test_label_geometry.py` asserts label-to-border clearance.
 
-- Geometry assertion pins label-to-border clearance.
+Limitation: the images cover this fixture and font stack; they do not prove every label layout.
 """
 
 
@@ -67,8 +73,42 @@ class AuditTests(unittest.TestCase):
         result = MODULE.audit(body, "generated")
         self.assertIn("regeneration-command", self.codes(result, "error"))
 
+    def test_generated_evidence_requires_labelled_claim_input_and_head(self) -> None:
+        replacements = {
+            "Claim: the label clears the container border without moving the arrow.\n\n": "",
+            "Input/fixture: `fixtures/label-overlap.json` with the same renderer config at both revisions.\n\n": "",
+            f"Current SHA: `{HEAD_SHA}`\n\n": "",
+        }
+        body = generated_body()
+        for source, replacement in replacements.items():
+            body = body.replace(source, replacement)
+        result = MODULE.audit(body, "generated")
+        self.assertIn("visible-claim", self.codes(result, "error"))
+        self.assertIn("same-input", self.codes(result, "error"))
+        self.assertIn("current-provenance", self.codes(result, "error"))
+
+    def test_generated_evidence_warns_without_explicit_limitation(self) -> None:
+        body = generated_body().replace(
+            "Limitation: the images cover this fixture and font stack; they do not prove every label layout.\n",
+            "",
+        )
+        result = MODULE.audit(body, "generated")
+        self.assertIn("evidence-limitation", self.codes(result, "warning"))
+
+    def test_receipt_can_replace_regeneration_command(self) -> None:
+        body = generated_body().replace(
+            "Regenerate with `python3 scripts/render-evidence.py`.",
+            "Receipt: `evidence/receipt.json` records input SHA-256 and both output SHA-256 values.",
+        )
+        result = MODULE.audit(body, "generated")
+        self.assertNotIn("regeneration-command", self.codes(result, "error"))
+        self.assertIn("evidence-receipt", self.codes(result, "pass"))
+
     def test_new_surface_can_preserve_an_honest_nonvisual_baseline(self) -> None:
         body = f"""## Visual evidence
+
+Claim: the previously unsupported radar chart now renders six bounded axes.
+Input/fixture: `fixtures/radar.json`.
 
 Before: no prior renderable baseline; the old version reports unsupported syntax
 at immutable commit `{BASE_SHA}`. No fabricated image is used.
@@ -76,9 +116,11 @@ at immutable commit `{BASE_SHA}`. No fabricated image is used.
 After:
 ![After: radar chart renders all six axes](https://raw.githubusercontent.com/acme/charts/{HEAD_SHA}/docs/radar-after.png)
 
+Current SHA: `{HEAD_SHA}`.
 Regenerate with `npm run render-radar-evidence`.
 What to inspect: six axes, complete labels, and bounded legend.
-Regression test asserts all six axes and bounded legend geometry.
+Independent check: `tests/radar-geometry.test.ts` asserts all six axes and bounded legend geometry.
+Limitation: this proves the checked fixture, not every radar dataset.
 """
         result = MODULE.audit(body, "generated")
         self.assertEqual("pass", result["status"])
@@ -137,6 +179,30 @@ What to inspect: label clearance. Regression test asserts clearance.
         self.assertEqual(0, result["media_count"])
         self.assertIn("visual-assets", self.codes(result, "error"))
 
+    def test_unclosed_comment_and_indented_code_are_not_counted(self) -> None:
+        hidden = generated_body()
+        for body in (f"## Visual evidence\n\n<!--\n{hidden}", "    " + hidden.replace("\n", "\n    ")):
+            with self.subTest(body=body[:30]):
+                result = MODULE.audit(body, "generated")
+                self.assertEqual(0, result["media_count"])
+                self.assertIn("visual-assets", self.codes(result, "error"))
+
+    def test_reference_style_images_are_supported(self) -> None:
+        body = generated_body().replace(
+            f"![Before: label overlaps the container border](https://raw.githubusercontent.com/acme/charts/{BASE_SHA}/docs/before.png)",
+            "![Before: label overlaps the container border][before-image]",
+        ).replace(
+            f"![After: label clears the container border](https://raw.githubusercontent.com/acme/charts/{HEAD_SHA}/docs/after.png)",
+            "![After: label clears the container border][after-image]",
+        )
+        body += (
+            f"\n[before-image]: https://raw.githubusercontent.com/acme/charts/{BASE_SHA}/docs/before.png\n"
+            f"[after-image]: https://raw.githubusercontent.com/acme/charts/{HEAD_SHA}/docs/after.png\n"
+        )
+        result = MODULE.audit(body, "generated")
+        self.assertEqual(2, result["media_count"])
+        self.assertNotIn("visual-assets", self.codes(result, "error"))
+
     def test_one_image_cannot_claim_before_and_after(self) -> None:
         body = f"""## Visual evidence
 
@@ -148,8 +214,8 @@ This is the before and after comparison.
 
     def test_baseline_sha_must_be_explicitly_labelled(self) -> None:
         body = generated_body().replace(
-            f"Baseline commit `{BASE_SHA}`; current commit `{HEAD_SHA}`.",
-            f"Baseline evidence is below. Head commit `{HEAD_SHA}`.",
+            f"Baseline SHA: `{BASE_SHA}`",
+            "Baseline evidence is below.",
         ).replace(
             f"/{BASE_SHA}/docs/before.png",
             f"/{HEAD_SHA}/docs/before.png",
@@ -161,6 +227,16 @@ This is the before and after comparison.
         body = generated_body().replace(BASE_SHA, HEAD_SHA)
         result = MODULE.audit(body, "generated")
         self.assertIn("baseline-provenance", self.codes(result, "error"))
+
+    def test_expected_git_revisions_must_match_labels(self) -> None:
+        result = MODULE.audit(
+            generated_body(),
+            "generated",
+            expected_base_sha="3" * 40,
+            expected_current_sha="4" * 40,
+        )
+        self.assertIn("baseline-provenance", self.codes(result, "error"))
+        self.assertIn("current-provenance", self.codes(result, "error"))
 
     def test_base_sha_label_and_abbreviated_same_revision_are_understood(self) -> None:
         body = generated_body().replace(
@@ -187,11 +263,60 @@ https://github.com/user-attachments/assets/11111111-1111-1111-1111-111111111111
 
     def test_generated_evidence_warns_without_independent_oracle(self) -> None:
         body = generated_body().replace(
-            "- Geometry assertion pins label-to-border clearance.",
-            "- Reviewed the screenshots manually.",
+            "Independent check: `tests/test_label_geometry.py` asserts label-to-border clearance.",
+            "Reviewed the screenshots manually.",
         )
         result = MODULE.audit(body, "generated")
         self.assertIn("independent-oracle", self.codes(result, "warning"))
+
+    def test_subjective_limitation_can_explain_absent_oracle(self) -> None:
+        body = generated_body().replace(
+            "Independent check: `tests/test_label_geometry.py` asserts label-to-border clearance.\n\n",
+            "",
+        ).replace(
+            "Limitation: the images cover this fixture and font stack; they do not prove every label layout.",
+            "Limitation: visual hierarchy is subjective and no objective metric would establish readability.",
+        )
+        result = MODULE.audit(body, "generated")
+        self.assertIn("independent-oracle", self.codes(result, "pass"))
+
+    def test_unrelated_commands_and_tests_do_not_satisfy_proof_fields(self) -> None:
+        body = generated_body().replace(
+            "Regenerate with `python3 scripts/render-evidence.py`.",
+            "The documentation is reproducible. Run `npm test`.",
+        ).replace(
+            "Independent check: `tests/test_label_geometry.py` asserts label-to-border clearance.",
+            "Unit test covers CLI parsing only.",
+        )
+        result = MODULE.audit(body, "generated")
+        self.assertIn("regeneration-command", self.codes(result, "error"))
+        self.assertIn("independent-oracle", self.codes(result, "warning"))
+
+    def test_external_generated_urls_are_not_reported_as_pinned(self) -> None:
+        body = generated_body(BASE_SHA, HEAD_SHA).replace(
+            f"https://raw.githubusercontent.com/acme/charts/{BASE_SHA}/docs/before.png",
+            "https://example.com/before.png",
+        ).replace(
+            f"https://raw.githubusercontent.com/acme/charts/{HEAD_SHA}/docs/after.png",
+            "https://example.com/after.png",
+        )
+        result = MODULE.audit(body, "generated")
+        self.assertNotIn("immutable-urls", self.codes(result, "pass"))
+        self.assertIn("external-url-provenance", self.codes(result, "warning"))
+
+    def test_qualified_no_impact_statement_does_not_exempt_visible_change(self) -> None:
+        body = """## Screenshots
+
+There is no visual change to layout, but the button color changes from gray to blue.
+"""
+        result = MODULE.audit(body, "ui")
+        self.assertIn("contradictory-no-impact", self.codes(result, "error"))
+        self.assertIn("visual-assets", self.codes(result, "error"))
+
+    def test_auto_does_not_treat_react_renderer_callback_as_generated_output(self) -> None:
+        body = "## What\n\nRefactor the React renderer callback without changing pixels."
+        result = MODULE.audit(body, "auto")
+        self.assertEqual("none", result["kind"])
 
     def test_malformed_doubled_backticks_are_detected(self) -> None:
         body = generated_body().replace(
@@ -206,7 +331,7 @@ https://github.com/user-attachments/assets/11111111-1111-1111-1111-111111111111
             f"![Variant {index}: labels remain clear](https://raw.githubusercontent.com/acme/charts/{HEAD_SHA}/docs/{index}.png)"
             for index in range(13)
         )
-        body = generated_body().replace("\n## Testing", f"\n{images}\n\n## Testing")
+        body = generated_body().replace("\nIndependent check:", f"\n{images}\n\nIndependent check:")
         result = MODULE.audit(body, "generated")
         self.assertIn("evidence-volume", self.codes(result, "warning"))
 
@@ -224,8 +349,8 @@ https://github.com/user-attachments/assets/11111111-1111-1111-1111-111111111111
             self.assertEqual("pass", json.loads(completed.stdout)["status"])
 
             warning_body = generated_body().replace(
-                "- Geometry assertion pins label-to-border clearance.",
-                "- Reviewed the screenshots manually.",
+                "Independent check: `tests/test_label_geometry.py` asserts label-to-border clearance.",
+                "Reviewed the screenshots manually.",
             )
             body_file.write_text(warning_body, encoding="utf-8")
             non_strict = subprocess.run(

@@ -71,6 +71,9 @@ class EvalAssertionTests(unittest.TestCase):
             ("pos-generated-evidence-durability-audit", "requires-immutable-image-refs", "Use full commit-SHA URLs."),
             ("pos-malformed-visual-markdown", "detects-missing-alt", "The HTML images need `alt` text."),
             ("pos-visual-claim-needs-independent-oracle", "requires-discriminating-visual-test", "Add a test that measures the distance and fails on regression."),
+            ("pos-generated-proof-contract-end-to-end", "requires-identical-input", "Use the same fixture at both revisions."),
+            ("pos-generated-proof-contract-end-to-end", "requires-material-limitation", "State what the image cannot prove."),
+            ("neg-subjective-generated-proof-no-overbuild", "recognizes-subjective-boundary", "This is a subjective judgment; do not invent a metric."),
         ]
         for case_id, assertion_name, output in examples:
             with self.subTest(case_id=case_id, assertion=assertion_name):

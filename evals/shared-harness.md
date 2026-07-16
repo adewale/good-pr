@@ -9,7 +9,7 @@ This repo participates in the shared Skill Eval Harness:
 Install the harness from GitHub with [uv](https://docs.astral.sh/uv/):
 
 ```sh
-uv tool install git+https://github.com/adewale/skill-eval-harness.git@v0.6.0
+uv tool install git+https://github.com/adewale/skill-eval-harness.git@96013a50e0139a4886f0fe1cfa932ac5834ce02a
 ```
 
 Splits:
@@ -60,7 +60,7 @@ Script assertions are deterministic repo-owned oracles and require `--allow-scri
 
 ## Reproduce the visual-evidence comparison
 
-`evals/visual-evidence-benchmark.json` freezes the seven-case comparison used by
+`evals/visual-evidence-benchmark.json` freezes the nine-case comparison used by
 PR #11. Its `old_skill` arm points to the committed snapshot of `good-pr` at
 `8e613beba912411217ae89b82fadb081a4380bb5`; no sibling checkout or temporary
 manifest edit is required.
@@ -82,15 +82,29 @@ skill-benchmark benchmark evals/visual-evidence-benchmark.json \
   --out /tmp/good-pr-visual-evidence-report.json
 ```
 
-The committed result at `evals/results/visual-evidence-gpt-5.4.json` records the
-model, harness/baseline revisions, content-tree and artifact-inventory hashes,
-case-level scores, diagnostic grader rounds, run counts, medians, and exact
-commands. The adjacent `visual-evidence-gpt-5.4-runs.csv` preserves all 63
-run-level objective scores and execution/provenance fields. Raw model transcripts
-remain uncommitted because they are large and
-may contain provider metadata; the frozen manifest and commands are the
-reproduction path. Treat visible tune-case p-values as descriptive, not as
-holdout or confirmatory significance claims.
+The committed summary records the exact evaluated source commit and Git skill
+tree. The adjacent run CSV binds every score to an output and artifact-marker
+hash; `visual-evidence-gpt-5.4-outputs.jsonl` preserves the sanitized model text
+and per-assertion decisions without provider events, traces, or stderr.
+
+Build and verify the proof bundle after running and grading a clean committed
+source revision:
+
+```sh
+python3 scripts/build_eval_evidence.py build \
+  --manifest evals/visual-evidence-benchmark.json \
+  --runs eval-runs/visual-evidence-gpt-5.4 \
+  --report /tmp/good-pr-visual-evidence-report.json \
+  --evaluated-sha <committed-source-sha> \
+  --baseline-sha 8e613beba912411217ae89b82fadb081a4380bb5 \
+  --baseline-snapshot evals/baselines/good-pr-8e613be \
+  --harness-sha 96013a50e0139a4886f0fe1cfa932ac5834ce02a
+python3 scripts/build_eval_evidence.py verify \
+  evals/results/visual-evidence-gpt-5.4.json
+```
+
+Treat visible tune-case statistics as descriptive, not as holdout or
+confirmatory significance claims.
 
 The recorded final run attempted parallel partitions, and three workers aborted
 after successful invocations when temporary Codex-home cleanup encountered

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import sys
 import unittest
@@ -25,6 +26,7 @@ class CorpusAnalysisTests(unittest.TestCase):
                 "title": "Strong renderer evidence",
                 "url": "https://github.com/adewale/charts/pull/1",
                 "createdAt": "2026-07-16T00:00:00Z",
+                "updatedAt": "2026-07-16T01:00:00Z",
                 "body": f"""## Visual evidence
 Before and after. Regenerate with `npm run evidence`.
 ![Before: overlap](https://raw.githubusercontent.com/adewale/charts/{sha}/before.png)
@@ -37,6 +39,7 @@ What to inspect: label clearance. Contact sheet. SHA-256 receipt.
                 "title": "Mutable evidence",
                 "url": "https://github.com/external/project/pull/2",
                 "createdAt": "2026-07-15T00:00:00Z",
+                "updatedAt": "2026-07-15T01:00:00Z",
                 "body": """![After](https://raw.githubusercontent.com/external/project/feature/output.png)
 ![Relative evidence](docs/output.png)
 """,
@@ -47,18 +50,30 @@ What to inspect: label clearance. Contact sheet. SHA-256 receipt.
                 "title": "No pixels changed",
                 "url": "https://github.com/adewale/charts/pull/3",
                 "createdAt": "2026-07-14T00:00:00Z",
+                "updatedAt": "2026-07-14T01:00:00Z",
                 "body": "## Screenshots\nNot applicable: no visual change because output is byte-identical.",
             },
         ]
-        report = MODULE.analyze(prs, "adewale", limit=3)
+        report = MODULE.analyze(prs, "adewale", limit=3, observed_at="2026-07-16T02:00:00Z")
         self.assertEqual(3, report["total_authored_prs"])
         self.assertEqual(2, report["self_owned_repo_prs"])
         self.assertEqual(2, report["prs_with_images"])
         self.assertEqual(1, report["sha_pinned_images"])
         self.assertEqual(2, report["mutable_repo_image_urls"])
         self.assertEqual(1, report["explicit_no_screenshot_rationales"])
-        self.assertEqual("gh search prs --author adewale --limit 3", report["method"]["query"])
+        self.assertEqual(
+            "gh search prs --author adewale --visibility public --limit 3",
+            report["method"]["query"],
+        )
         self.assertTrue(report["method"]["search_limit_reached"])
+        self.assertEqual("2026-07-16T02:00:00Z", report["method"]["observed_at"])
+        self.assertEqual(3, len(report["observations"]))
+        self.assertEqual(
+            hashlib.sha256(prs[0]["body"].encode()).hexdigest(),
+            report["observations"][0]["body_sha256"],
+        )
+        self.assertEqual("2026-07-16T01:00:00Z", report["observations"][0]["updated_at"])
+        self.assertNotIn("title", report["observations"][0])
 
     def test_nonrendered_image_examples_are_excluded(self) -> None:
         body = """<!-- ![Commented](commented.png) -->
@@ -72,6 +87,22 @@ What to inspect: label clearance. Contact sheet. SHA-256 receipt.
 ![Rendered](rendered.png)
 """
         self.assertEqual([("Rendered", "rendered.png")], MODULE.extract_images(body))
+
+    def test_unclosed_comments_indented_code_and_reference_images(self) -> None:
+        body = """<!-- ![Hidden](hidden.png)
+
+    ![Also hidden](indented.png)
+
+![Rendered reference][proof]
+[proof]: rendered.png
+"""
+        self.assertEqual([], MODULE.extract_images(body))
+
+        reference = """![Rendered reference][proof]
+
+[proof]: rendered.png
+"""
+        self.assertEqual([("Rendered reference", "rendered.png")], MODULE.extract_images(reference))
 
 
 if __name__ == "__main__":

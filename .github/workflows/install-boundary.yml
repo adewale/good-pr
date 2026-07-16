@@ -21,3 +21,5 @@ jobs:
         env:
           PYTHONDONTWRITEBYTECODE: '1'
         run: python3 -m unittest discover -s tests -v
+      - name: Verify committed eval proof bundle
+        run: python3 scripts/build_eval_evidence.py verify evals/results/visual-evidence-gpt-5.4.json

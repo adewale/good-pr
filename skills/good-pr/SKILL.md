@@ -12,7 +12,6 @@ description: >
   or when they want a pre-submission sanity check. Even if the user doesn't
   explicitly mention "PR" — if they're packaging a code change for someone else
   to review, this skill applies.
-compatibility: Agent Skills clients including Codex, OpenCode, Pi, Gemini CLI, and Claude Code.
 ---
 
 # Good PR
@@ -101,10 +100,10 @@ Make the evidence trustworthy, not just present:
   a claim, not make the reviewer play spot-the-difference
 - **Prefer generated artifacts over hand-taken screenshots** when the project
   renders output programmatically (diagramming, charting, PDF/image pipelines):
-  render the "before" from the base commit and the "after" from your branch, so
-  there's no doubt the evidence matches the code in the PR
-- **Include the regeneration command** (e.g. `npm run render-examples`) so a
-  skeptical reviewer can rebuild the evidence instead of trusting attachments
+  render the same named input and configuration at the immutable base and head
+  commits. State the visible claim before the images
+- **Include a labelled regeneration command or generated receipt** so a
+  skeptical reviewer can rebuild the evidence or verify input/output hashes
 - **Pin repository-hosted generated images to full commit SHAs**, not branch
   names or relative paths; otherwise a later force-push or branch deletion can
   rewrite the PR's historical evidence
@@ -120,7 +119,10 @@ Make the evidence trustworthy, not just present:
   full-size images; link the exhaustive artifacts separately
 - **Pair screenshots with an independent oracle** when the claim is machine-
   checkable (geometry assertion, metric, regression test, or freshness gate).
-  Pixels demonstrate the perceptual outcome; they should not be the only proof
+  Link the existing check to the claim; do not invent a misleading metric for a
+  subjective judgment
+- **State the material limitation**: name the fixture, viewport, browser, font
+  stack, state, or quality dimension the visual does not establish
 
 Do not fabricate a before image for a genuinely new or previously unsupported
 surface. Show the failure/unsupported baseline honestly, explain why no image
@@ -129,6 +131,12 @@ exists, and provide after evidence.
 For ordinary UI work a hand-taken screenshot is fine — don't build a render
 pipeline just to fix a button color.
 
+Keep generated proof proportional too. Reuse the production renderer, checked-
+in fixtures, and existing tests or metrics. Do not duplicate rendering logic,
+introduce a parallel domain model, or create a proof-only approval system unless
+the repeated regression risk justifies maintaining it. See the compact proof
+contract in `references/visual-evidence.md`.
+
 After drafting a PR with visual impact, save the description to a Markdown file
 and run the installed checker. Resolve the script relative to this `SKILL.md`;
 do not assume the target repository has copied it into its own `scripts/`
@@ -136,14 +144,14 @@ directory:
 
 ```bash
 python3 <good-pr-skill-dir>/scripts/check-visual-evidence.py --kind ui /tmp/pr-body.md
-python3 <good-pr-skill-dir>/scripts/check-visual-evidence.py --kind generated /tmp/pr-body.md
+python3 <good-pr-skill-dir>/scripts/check-visual-evidence.py --kind generated --strict /tmp/pr-body.md
 ```
 
 Use `ui` for ordinary application screenshots and `generated` for renderers,
 charts, PDFs, image pipelines, or other programmatic output. The checker fails
 missing causal/provenance requirements, warns about accessibility and evidence
-volume, warns when no independent oracle is named, ignores commented/fenced
-placeholder Markdown, and never downloads or judges the pixels. See
+volume, warns when no associated oracle or limitation is named, ignores non-
+rendered Markdown examples, and never downloads or judges the pixels. See
 `references/visual-evidence.md` for the corpus-derived rationale and examples.
 
 ### 3. Code That Fits
@@ -331,8 +339,9 @@ When a user asks for help with a PR:
    or genuinely no visible impact. For a drafted body, run
    `scripts/check-visual-evidence.py` with the matching `--kind`; address errors
    and report any proportional warnings. For generated output, require an
-   immutable causal baseline, SHA-pinned URLs, review cues, a regeneration
-   command, accessible alt text, and an independent correctness oracle
+   named claim/input, immutable base and head, SHA-pinned URLs, review cues, a
+   regeneration command or receipt, accessible alt text, an existing
+   independent oracle when machine-checkable, and an explicit limitation
 7. **Be honest** — it's better to tell someone their PR needs work before they
    submit it than to let them waste a maintainer's time and damage their
    reputation in the project

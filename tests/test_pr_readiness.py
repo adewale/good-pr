@@ -15,7 +15,7 @@ def run(command: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
 
 
 class ReadinessIntegrationTests(unittest.TestCase):
-    def make_repo(self, directory: Path) -> None:
+    def make_repo(self, directory: Path, changed_file: str = "button.tsx") -> None:
         self.assertEqual(0, run(["git", "init", "-b", "main"], directory).returncode)
         self.assertEqual(0, run(["git", "config", "user.name", "Test User"], directory).returncode)
         self.assertEqual(0, run(["git", "config", "user.email", "test@example.com"], directory).returncode)
@@ -26,8 +26,8 @@ class ReadinessIntegrationTests(unittest.TestCase):
             run(["git", "-c", "commit.gpgsign=false", "commit", "-m", "baseline"], directory).returncode,
         )
         self.assertEqual(0, run(["git", "checkout", "-b", "feature"], directory).returncode)
-        (directory / "button.tsx").write_text("export const Button = () => null;\n", encoding="utf-8")
-        self.assertEqual(0, run(["git", "add", "button.tsx"], directory).returncode)
+        (directory / changed_file).write_text("export const Button = () => null;\n", encoding="utf-8")
+        self.assertEqual(0, run(["git", "add", changed_file], directory).returncode)
         self.assertEqual(
             0,
             run(["git", "-c", "commit.gpgsign=false", "commit", "-m", "change button"], directory).returncode,
@@ -67,6 +67,52 @@ class ReadinessIntegrationTests(unittest.TestCase):
             accepted = run(["bash", str(SCRIPT), "main", str(body)], repo)
             self.assertEqual(0, accepted.returncode, accepted.stdout)
             self.assertIn("no-visual-impact", accepted.stdout)
+
+    def test_wrapper_allows_explicit_generated_kind_for_non_ui_source(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            self.make_repo(repo, "renderer.ts")
+            body = repo / "body.md"
+            body.write_text("## What\n\nFix clipping in Mermaid SVG labels.\n", encoding="utf-8")
+
+            explicit = run(["bash", str(SCRIPT), "main", str(body), "generated"], repo)
+            self.assertEqual(1, explicit.returncode, explicit.stdout)
+            self.assertIn("Visual Evidence Audit (generated)", explicit.stdout)
+
+            invalid = run(["bash", str(SCRIPT), "main", str(body), "maybe"], repo)
+            self.assertEqual(2, invalid.returncode, invalid.stdout)
+            self.assertIn("evidence kind must be", invalid.stderr)
+
+    def test_binary_only_change_is_not_reported_as_empty(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            self.make_repo(repo)
+            binary = repo / "proof.png"
+            binary.write_bytes(b"\x89PNG\r\n\x1a\n\x00\x00")
+            self.assertEqual(0, run(["git", "add", "proof.png"], repo).returncode)
+            self.assertEqual(
+                0,
+                run(["git", "-c", "commit.gpgsign=false", "commit", "-m", "add proof"], repo).returncode,
+            )
+            completed = run(["bash", str(SCRIPT), "main"], repo)
+            self.assertNotIn("No changes detected", completed.stdout)
+
+    def test_removed_secret_like_text_is_not_a_blocking_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            self.assertEqual(0, run(["git", "init", "-b", "main"], repo).returncode)
+            self.assertEqual(0, run(["git", "config", "user.name", "Test User"], repo).returncode)
+            self.assertEqual(0, run(["git", "config", "user.email", "test@example.com"], repo).returncode)
+            config = repo / "config.txt"
+            config.write_text('password = "leaked"\n', encoding="utf-8")
+            self.assertEqual(0, run(["git", "add", "config.txt"], repo).returncode)
+            self.assertEqual(0, run(["git", "-c", "commit.gpgsign=false", "commit", "-m", "base"], repo).returncode)
+            self.assertEqual(0, run(["git", "checkout", "-b", "feature"], repo).returncode)
+            config.write_text("password is loaded from the environment\n", encoding="utf-8")
+            self.assertEqual(0, run(["git", "add", "config.txt"], repo).returncode)
+            self.assertEqual(0, run(["git", "-c", "commit.gpgsign=false", "commit", "-m", "remove secret"], repo).returncode)
+            completed = run(["bash", str(SCRIPT), "main"], repo)
+            self.assertEqual(0, completed.returncode, completed.stdout)
 
 
 if __name__ == "__main__":

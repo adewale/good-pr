@@ -10,17 +10,24 @@ All notable changes to this project will be documented in this file.
   proportionate ordinary-UI/generated-output policies, immutable GitHub URL
   checks, honest no-baseline handling, accessibility/reviewer cues, malformed
   image detection, contact-sheet guidance, JSON output, and strict mode
-- Corpus-derived visual-evidence reference based on 627 authored PRs across 52
+- Corpus-derived visual-evidence reference based on 629 authored PRs across 51
   repositories, including durable examples and observed GitHub attachment
   failure modes
 - Re-runnable `analyze_pr_visual_evidence.py` GitHub corpus scanner used to
   reproduce the aggregate evidence metrics and exemplar ranking
-- Five visual-evidence benchmark cases covering durable generated artifacts,
+- Versioned row-level corpus receipt with observation timestamps, PR/body
+  hashes, and extracted features while omitting PR body text
+- Seven visual-evidence benchmark cases covering durable generated artifacts,
   honest missing baselines, no-visible-impact restraint, malformed Markdown,
   and independent correctness oracles
-- Reproducible seven-case, three-arm visual-evidence comparison with a committed
+- Reproducible nine-case, three-arm visual-evidence comparison with a committed
   baseline skill snapshot, model-pinned manifest, compact result, provenance
   hashes, diagnostic tuning history, and exact rerun commands
+- Sanitized output/per-assertion eval proof bundle, source/tree binding, and a
+  CI verifier for the manifest, run matrix, outputs, and frozen baseline
+- Compact generated-output proof contract covering a named claim and input,
+  immutable base/head, reproduction or receipt, associated existing oracle,
+  material limitation, and proportional reuse of production fixtures
 
 - Visual evidence provenance guidance (inspired by beautiful-mermaid PR #22):
   caption each before/after pair with the specific defect it demonstrates,
@@ -41,6 +48,12 @@ All notable changes to this project will be documented in this file.
   use UI-file changes as a fallback without downgrading generated-output policy
 - Corpus analysis excludes non-rendered examples and counts relative repository
   image paths as mutable evidence
+- Visual audits now ignore unclosed comments and indented code, support
+  reference-style images, bind labelled proof fields to the visual section and
+  checked-out revisions, distinguish external URL provenance, and reject
+  contradictory no-impact claims
+- Readiness checks accept an explicit evidence kind, recognize generated/binary
+  changes, and keep lexical secret detection advisory and redacted
 - Eval negation guards no longer reject “no need” answers, code-formatted `alt`
   guidance is recognized, benchmark and ablation skill paths resolve from the
   manifest directory, and regression tests run in CI

@@ -3,23 +3,38 @@
 Use this reference for PRs that change application UI, diagrams, charts, PDFs,
 images, generated documentation, or any other output reviewers must see.
 
+## Contents
+
+- Evidence policy by change type
+- Generated-output proof contract
+- GitHub attachment difficulties
+- Lessons from the authored-PR corpus
+- Automated audit
+
 ## Evidence policy by change type
 
 | Change type | Proportionate evidence |
 |---|---|
 | Ordinary UI | Hand-taken before/after screenshots or a recording, with useful captions and relevant states/viewports |
-| Programmatically generated output | Same input rendered at an immutable base commit and at the proposed head, SHA-pinned artifacts, exact regeneration command, and an independent oracle |
+| Programmatically generated output | Same named input/config rendered at immutable base and head commits, SHA-pinned artifacts, a regeneration command or hash receipt, an existing oracle when machine-checkable, and a material limitation |
 | New or previously unsupported surface | Honest error/unsupported baseline plus after evidence; do not fabricate a before image |
 | No visible impact | A short, concrete explanation of why screenshots are not applicable, followed by the non-visual evidence that does apply |
 
-## Recommended generated-evidence shape
+## Generated-output proof contract
+
+Use this compact contract for generated, high-risk, or mechanically verifiable
+visual claims. Keep ordinary UI screenshots lightweight.
 
 ```markdown
 ## Visual evidence
 
-Baseline: `<full or identified immutable SHA>`
+Claim: `<one visible outcome the images demonstrate>`
 
-Current: `<head SHA>`
+Input/fixture: `<checked-in path or stable identifier>; same config at both revisions`
+
+Baseline SHA: `<full or identified immutable SHA>`
+
+Current SHA: `<full head SHA>`
 
 Regenerate: `npm run render-pr-evidence`
 
@@ -27,13 +42,21 @@ Regenerate: `npm run render-pr-evidence`
 |---|---|---|---|
 | <img alt="Before: label overlaps the container border" src="<SHA-pinned URL>" width="380"> | <img alt="After: label clears the container border" src="<SHA-pinned URL>" width="380"> | The old anchor used the label centre instead of its edge. | The label clears the border in all four directions; the unchanged arrow is a control. |
 
-Independent checks:
-- geometry assertion for label-to-border clearance
-- evidence freshness check over inputs and image bytes
+Independent check: [`tests/label-geometry.test.ts`](<commit-pinned URL>) asserts label-to-border clearance.
+
+Limitation: This fixture checks one font stack and viewport; the image does not prove every label layout or general readability.
 ```
 
-One combined before/after contact sheet is fine. A new surface may have only an
-after image if the description preserves the real unsupported/error baseline.
+`Receipt: evidence/receipt.json` may replace `Regenerate:` when it records the
+generator/version, input hash, base/head SHAs, output hashes, and check result.
+One combined contact sheet is fine; lead with the failing row or crop that drives
+the decision and link exhaustive evidence. A new surface may have only an after
+image if the description preserves the real unsupported/error baseline.
+
+Reuse the production renderer, existing fixtures, and existing tests. Do not
+create parallel rendering logic or a proof-only approval system unless its
+maintenance cost is justified by recurring risk. For subjective claims, use the
+same-input comparison and an honest limitation instead of inventing a metric.
 
 ## GitHub attachment difficulties
 
@@ -54,33 +77,39 @@ after image if the description preserves the real unsupported/error baseline.
   In particular, do not wrap an image URL in doubled backticks.
 - **Uploaded recordings are bare attachment URLs.** Give them descriptive link
   text or a nearby caption so reviewers know the interaction and states shown.
-- **Commented or fenced examples are not evidence.** Template placeholders and
-  code samples do not render as screenshots and are ignored by the audit.
+- **Commented, fenced, indented, or inline examples are not evidence.** Template
+  placeholders and code samples do not render as screenshots and are ignored.
 - **A screenshot cannot prove its own correctness.** Back perceptual claims with
   tests, measurements, controls, or freshness gates when those claims are
   mechanically expressible.
 
 ## Lessons from an authored-PR corpus
 
-On 2026-07-16, a GitHub search over all 627 PRs authored by `adewale` found 596
-PRs in `adewale/*` repositories and 31 external contributions across 52
-repositories. This scan excludes image-like syntax inside HTML comments, fenced
-examples, and inline code; it does not judge pixels. Counts will drift as PR
-descriptions change.
+On 2026-07-16, a public-repository GitHub search over all 629 PRs authored by
+`adewale` found 598 PRs in `adewale/*` repositories and 31 external
+contributions across 51 repositories. This scan excludes image-like syntax
+inside HTML comments, fenced
+examples, indented code, and inline code; it does not judge pixels. The versioned
+corpus receipt preserves URLs, observation times, body hashes, and extracted
+features without copying PR bodies. Counts will drift as descriptions change;
+the receipt cannot reconstruct later edits.
 
-- 47 PRs embedded 198 rendered images or image tags.
-- 42/47 image-bearing PRs discussed before and after; 39/47 discussed
+- 49 PRs embedded 208 rendered images or image tags.
+- 44/49 image-bearing PRs discussed before and after; 41/49 discussed
   regeneration or reproduction.
-- Only 27/47 used at least one SHA-pinned repository image. The corpus still
+- Only 29/49 used at least one SHA-pinned repository image. The corpus still
   contained 51 repository image URLs or relative paths with mutable refs.
-- 71 image embeds had missing or very short alt text.
-- Only nine image-bearing PRs explicitly told reviewers what to inspect, and
-  nine used contact sheets.
-- Ten PRs gave an explicit reason screenshots were not applicable.
+- 79 image embeds had missing or very short alt text.
+- Only 11 image-bearing PRs explicitly told reviewers what to inspect, and
+  ten used contact sheets.
+- Eleven PRs gave an explicit reason screenshots were not applicable.
 - Two PR descriptions contained doubled-backtick image URLs that may not render.
 
 Representative lessons:
 
+- [`agentic-mermaid#183`](https://github.com/adewale/agentic-mermaid/pull/183)
+  states exactly what its focused editor image cannot prove and routes the
+  nonvisual API/transport claims to source ratchets and negative tests.
 - [`agentic-mermaid#180`](https://github.com/adewale/agentic-mermaid/pull/180)
   is the compact target: exact causal source, SHA-pinned before/after, descriptive
   alt text, `Why`, `What to inspect`, focused crops, and independent geometry
@@ -126,7 +155,9 @@ python3 <good-pr-skill-dir>/scripts/check-visual-evidence.py --kind generated --
 
 The checker validates Markdown-level evidence contracts: section presence,
 causal before/after or honest baseline absence, descriptive alt text, immutable
-GitHub repository refs, regeneration commands, review cues, malformed URLs, and
-excessive inline volume. Generated-output audits also warn when no independent
-test, metric, control, or freshness check is named. It intentionally does not
-fetch assets or decide whether the pixels look correct.
+GitHub repository refs, labelled claim/input/base/head fields, regeneration
+commands or receipts, review cues, limitations, malformed URLs, and excessive
+inline volume. Generated-output audits warn when no associated independent
+check is named. The readiness wrapper accepts an explicit third argument
+(`ui`, `generated`, or `none`) and supplies the actual merge-base/head SHAs. The
+checker does not fetch assets or decide whether the pixels look correct.

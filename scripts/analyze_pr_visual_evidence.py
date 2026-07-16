@@ -3,30 +3,56 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import subprocess
 from collections import Counter
+from datetime import datetime, timezone
+from pathlib import Path
 from urllib.parse import urlparse
 
 
-FIELDS = "number,title,url,repository,body,createdAt,state"
+FIELDS = "number,title,url,repository,body,createdAt,updatedAt,state"
 MARKDOWN_IMAGE_RE = re.compile(r"!\[([^\]]*)\]\(([^)\s]+)(?:\s+[^)]*)?\)")
+REFERENCE_IMAGE_RE = re.compile(r"!\[([^\]]*)\]\[([^\]]+)\]")
+REFERENCE_DEFINITION_RE = re.compile(
+    r"^[ \t]{0,3}\[([^\]]+)\]:[ \t]*(?:<([^>]+)>|(\S+))(?:[ \t]+[^\n]+)?$",
+    re.MULTILINE,
+)
 HTML_IMAGE_RE = re.compile(r"<img\b([^>]*)>", re.IGNORECASE)
 HTML_ATTRIBUTE_RE = re.compile(r"([:\w-]+)\s*=\s*([\"'])(.*?)\2", re.DOTALL)
 HEADING_RE = re.compile(r"^#{2,6}\s+(.+?)\s*$", re.MULTILINE)
 FULL_SHA_RE = re.compile(r"^[0-9a-f]{40}$", re.IGNORECASE)
-HTML_COMMENT_RE = re.compile(r"<!--[\s\S]*?-->")
 FENCE_RE = re.compile(r"^\s{0,3}(`{3,}|~{3,})")
-INLINE_CODE_RE = re.compile(r"(`+)([^`\n]*?)\1")
+INLINE_CODE_RE = re.compile(r"(`+)(.*?)\1", re.DOTALL)
 
 
 def preserve_newlines(match: re.Match[str]) -> str:
     return "\n" * match.group(0).count("\n")
 
 
+def strip_html_comments(text: str) -> str:
+    output: list[str] = []
+    cursor = 0
+    while True:
+        start = text.find("<!--", cursor)
+        if start < 0:
+            output.append(text[cursor:])
+            break
+        output.append(text[cursor:start])
+        end = text.find("-->", start + 4)
+        if end < 0:
+            output.append("\n" * text[start:].count("\n"))
+            break
+        hidden = text[start : end + 3]
+        output.append("\n" * hidden.count("\n"))
+        cursor = end + 3
+    return "".join(output)
+
+
 def strip_nonrendered_markdown(text: str, *, strip_inline: bool = True) -> str:
-    text = HTML_COMMENT_RE.sub(preserve_newlines, text)
+    text = strip_html_comments(text)
     output: list[str] = []
     fence_char = ""
     fence_length = 0
@@ -46,7 +72,10 @@ def strip_nonrendered_markdown(text: str, *, strip_inline: bool = True) -> str:
                     fence_length = 0
             output.append("\n" if line.endswith("\n") else "")
             continue
-        output.append(line)
+        if line.startswith("    ") or line.startswith("\t"):
+            output.append("\n" if line.endswith("\n") else "")
+        else:
+            output.append(line)
     rendered = "".join(output)
     if strip_inline:
         return INLINE_CODE_RE.sub(lambda match: " " * len(match.group(0)), rendered)
@@ -59,6 +88,16 @@ def extract_images(body: str) -> list[tuple[str, str]]:
         (match.group(1).strip(), match.group(2).strip())
         for match in MARKDOWN_IMAGE_RE.finditer(body)
     ]
+    definitions = {
+        match.group(1).strip().casefold(): (match.group(2) or match.group(3)).strip()
+        for match in REFERENCE_DEFINITION_RE.finditer(body)
+    }
+    known_urls = {url for _, url in result}
+    for match in REFERENCE_IMAGE_RE.finditer(body):
+        url = definitions.get(match.group(2).strip().casefold())
+        if url and url not in known_urls:
+            result.append((match.group(1).strip(), url))
+            known_urls.add(url)
     for match in HTML_IMAGE_RE.finditer(body):
         attributes = {
             key.casefold(): value.strip()
@@ -89,7 +128,13 @@ def normalize_headings(body: str) -> set[str]:
     }
 
 
-def analyze(prs: list[dict], author: str, limit: int = 1000) -> dict:
+def analyze(
+    prs: list[dict],
+    author: str,
+    limit: int = 1000,
+    observed_at: str | None = None,
+) -> dict:
+    observed_at = observed_at or datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
     rows: list[dict] = []
     for pr in prs:
         source_body = pr.get("body") or ""
@@ -124,9 +169,10 @@ def analyze(prs: list[dict], author: str, limit: int = 1000) -> dict:
         rows.append({
             "repository": repository,
             "number": pr["number"],
-            "title": pr["title"],
             "url": pr["url"],
             "created_at": pr["createdAt"],
+            "updated_at": pr.get("updatedAt"),
+            "body_sha256": hashlib.sha256(source_body.encode("utf-8")).hexdigest(),
             "self_owned": repository.startswith(f"{author}/"),
             "images": len(media),
             "visual_heading": visual_heading,
@@ -147,8 +193,10 @@ def analyze(prs: list[dict], author: str, limit: int = 1000) -> dict:
     repositories = Counter(row["repository"] for row in rows)
     return {
         "method": {
-            "query": f"gh search prs --author {author} --limit {limit}",
+            "query": f"gh search prs --author {author} --visibility public --limit {limit}",
             "note": "Rendered-Markdown-oriented PR-description analysis; images are not downloaded or judged.",
+            "observed_at": observed_at,
+            "receipt_boundary": "Rows preserve public metadata, body hashes, and extracted features; PR body text is omitted and later edits cannot be reconstructed from this receipt.",
             "search_limit_reached": len(prs) >= limit,
         },
         "total_authored_prs": len(rows),
@@ -174,6 +222,7 @@ def analyze(prs: list[dict], author: str, limit: int = 1000) -> dict:
             key=lambda row: (row["score"], row["created_at"]),
             reverse=True,
         )[:20],
+        "observations": rows,
     }
 
 
@@ -184,6 +233,8 @@ def fetch_prs(author: str, limit: int) -> list[dict]:
         "prs",
         "--author",
         author,
+        "--visibility",
+        "public",
         "--limit",
         str(limit),
         "--json",
@@ -203,8 +254,15 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--author", required=True, help="GitHub login whose authored PRs should be searched")
     parser.add_argument("--limit", type=int, default=1000, help="GitHub search result limit (default: 1000)")
+    parser.add_argument("--out", type=Path, help="write the versioned JSON receipt to this path")
     args = parser.parse_args()
-    print(json.dumps(analyze(fetch_prs(args.author, args.limit), args.author, args.limit), indent=2))
+    rendered = json.dumps(analyze(fetch_prs(args.author, args.limit), args.author, args.limit), indent=2) + "\n"
+    if args.out:
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text(rendered, encoding="utf-8")
+        print(f"wrote {args.out}")
+    else:
+        print(rendered, end="")
     return 0
 
 

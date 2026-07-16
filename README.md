@@ -69,6 +69,10 @@ skills/good-pr/
     └── check-visual-evidence.py  # PR Markdown evidence/provenance audit
 ```
 
+Repository-only evidence lives outside the installable skill: `evidence/`
+contains the dated PR-corpus receipt, while `evals/results/` contains the
+source-bound model-eval proof bundle and sanitized outputs.
+
 ## Usage
 
 Once installed, the skill activates when you ask your coding agent for help with pull requests:
@@ -84,20 +88,22 @@ You can also run the readiness check script directly:
 bash skills/good-pr/scripts/check-pr-readiness.sh main
 ```
 
-Pass a drafted PR body as the second argument to include the visual-evidence
-audit when UI files changed:
+Pass a drafted PR body as the second argument. Use the optional third argument
+to override heuristic classification for generated output:
 
 ```bash
 bash skills/good-pr/scripts/check-pr-readiness.sh main /tmp/pr-body.md
+bash skills/good-pr/scripts/check-pr-readiness.sh main /tmp/pr-body.md generated
 ```
 
 Or run the evidence audit directly. `ui` accepts proportionate hand-taken
-screenshots; `generated` additionally enforces immutable provenance and a
-regeneration command:
+screenshots; `generated` additionally checks the labelled claim/input/base/head
+contract, a regeneration command or receipt, an associated oracle when
+machine-checkable, and a material limitation:
 
 ```bash
 python3 skills/good-pr/scripts/check-visual-evidence.py --kind ui /tmp/pr-body.md
-python3 skills/good-pr/scripts/check-visual-evidence.py --kind generated /tmp/pr-body.md
+python3 skills/good-pr/scripts/check-visual-evidence.py --kind generated --strict /tmp/pr-body.md
 ```
 
 ## Credits

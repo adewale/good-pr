@@ -25,8 +25,10 @@ and check it off or note why it doesn't apply.
 - [ ] **Each pair captioned** — text states the specific defect or change the
       images demonstrate
 - [ ] **Evidence is reproducible** — if the project renders output
-      programmatically, images are generated from base commit vs. your branch
-      and the regeneration command is noted
+      programmatically, the same named input/config is generated at immutable
+      base and head commits and a regeneration command or receipt is noted
+- [ ] **Claim precedes evidence** — one visible claim appears before each
+      generated comparison
 - [ ] **URLs are immutable** — generated repository assets use full commit-SHA
       URLs rather than branches or relative paths
 - [ ] **Review cue included** — captions say why the pixels changed and exactly
@@ -37,7 +39,12 @@ and check it off or note why it doesn't apply.
       links; new/unsupported surfaces preserve the honest error baseline rather
       than fabricating a before image
 - [ ] **Independent oracle named** — machine-checkable visual claims also have
-      a test, metric, control, or freshness gate
+      an existing linked test, metric, control, or freshness gate; subjective
+      claims do not invent a misleading metric
+- [ ] **Limitation stated** — generated evidence says what fixture, state,
+      environment, or quality dimension it cannot prove
+- [ ] **No proof-only codebase** — evidence reuses production rendering,
+      checked-in fixtures, and existing checks unless recurring risk justifies more
 - [ ] **Multiple states shown** — empty, loading, error, populated
 - [ ] **Responsive checked** — different viewport sizes if relevant
 

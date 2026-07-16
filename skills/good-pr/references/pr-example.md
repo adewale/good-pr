@@ -45,13 +45,20 @@ a "No changes to save" toast instead.
 
 ## Screenshots / Recordings
 
-**Before:**
+**Claim:** Saving an unchanged form shows a recovery toast instead of a 500 page.
+
+**Before — inspect the 500 error after an unchanged save:**
 
 ![500 error on empty save](before-500-error.png)
 
-**After:**
+**After — inspect the toast and unchanged form state:**
 
 ![No changes toast on empty save](after-toast.png)
+
+The filenames are placeholders for GitHub-uploaded attachments in a real PR.
+Hand-taken screenshots are proportionate here: this is ordinary UI, while the
+unit test independently proves that no request is sent. No render pipeline or
+fixture-hash system is needed.
 
 ## Risk
 
@@ -71,3 +78,5 @@ Note what makes this effective:
 4. **"How" explains alternatives** — shows the contributor thought it through
 5. **Testing proves the fix** — the regression guard line is the key credibility signal
 6. **Risk is honest and scoped** — "low, here's why" is more trustworthy than no risk section
+7. **Visual proof is proportional** — focused UI screenshots plus the existing
+   regression test, without a proof-only implementation

@@ -35,7 +35,7 @@
     ],
     "analyst_pass": "After benchmark, review saturated, flaky, non-discriminating, and with-skill-failed cases before editing the skill."
   },
-  "notes": "Frozen seven-case visual-evidence comparison. Baseline snapshot is good-pr main at 8e613beba912411217ae89b82fadb081a4380bb5.",
+  "notes": "Frozen nine-case visual-evidence comparison. Baseline snapshot is good-pr main at 8e613beba912411217ae89b82fadb081a4380bb5.",
   "cases": [
     {
       "id": "pos-renderer-evidence-provenance",
@@ -413,6 +413,169 @@
         "round-5",
         "visual-evidence-audit",
         "testing"
+      ],
+      "domain": "pull-request-quality",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome",
+        "style"
+      ]
+    },
+    {
+      "id": "pos-generated-proof-contract-end-to-end",
+      "split": "tune",
+      "kind": "pr-review",
+      "prompt": "Audit this generated-PDF evidence plan. The PR says the clipping bug is fixed. Its before image uses `examples/invoice-small.json` at a labelled base commit; its after image uses `examples/invoice-large.json` from the feature branch. Both image links render, `npm test` passes, and no other evidence fields are present. What must change before review?",
+      "expected_behavior": [
+        "Require one explicit visible claim before the comparison.",
+        "Require the identical named input and configuration at distinct immutable base and head revisions.",
+        "Require an associated existing test, metric, or invariant plus a regeneration command or content-hash receipt.",
+        "Require a material limitation stating what the visual evidence cannot prove."
+      ],
+      "assertions": [
+        {
+          "name": "requires-visible-claim",
+          "type": "contains_any",
+          "values": [
+            "visible claim",
+            "state the claim",
+            "claim:",
+            "specific claim",
+            "one claim"
+          ]
+        },
+        {
+          "name": "requires-identical-input",
+          "type": "contains_any",
+          "values": [
+            "same input",
+            "identical input",
+            "same fixture",
+            "identical fixture",
+            "different inputs"
+          ]
+        },
+        {
+          "name": "requires-immutable-head",
+          "type": "contains_any",
+          "values": [
+            "head sha",
+            "current sha",
+            "full commit sha",
+            "full sha",
+            "immutable head",
+            "not the branch",
+            "branch is mutable"
+          ]
+        },
+        {
+          "name": "requires-associated-proof",
+          "type": "contains_any",
+          "values": [
+            "independent check",
+            "existing test",
+            "link the test",
+            "metric",
+            "invariant",
+            "regression test"
+          ]
+        },
+        {
+          "name": "requires-reproduction-or-receipt",
+          "type": "contains_any",
+          "values": [
+            "regenerate",
+            "reproduction command",
+            "reproduce",
+            "receipt",
+            "output hash",
+            "sha-256"
+          ]
+        },
+        {
+          "name": "requires-material-limitation",
+          "type": "contains_any",
+          "values": [
+            "limitation",
+            "cannot prove",
+            "can't prove",
+            "does not prove",
+            "doesn't prove",
+            "only proves",
+            "scope boundary"
+          ]
+        }
+      ],
+      "tags": [
+        "round-6",
+        "proof-contract",
+        "visual-evidence-audit"
+      ],
+      "domain": "pull-request-quality",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome",
+        "style"
+      ]
+    },
+    {
+      "id": "neg-subjective-generated-proof-no-overbuild",
+      "split": "tune",
+      "kind": "pr-review",
+      "prompt": "A generated marketing-poster PR makes a subjective claim that the new typography has better visual hierarchy. The repository already has a deterministic render command and a checked-in poster fixture. Should the contributor build a pixel-diff service, database, and approval workflow just to prove this PR?",
+      "expected_behavior": [
+        "Reuse the existing renderer and checked-in fixture for a same-input immutable comparison.",
+        "Do not demand a new proof-only service, database, approval workflow, or invented metric for a subjective judgment.",
+        "State the subjective boundary honestly under the evidence limitation."
+      ],
+      "assertions": [
+        {
+          "name": "reuses-existing-proof-path",
+          "type": "contains_any",
+          "values": [
+            "reuse the existing",
+            "existing renderer",
+            "existing render",
+            "checked-in fixture",
+            "same fixture",
+            "same input"
+          ]
+        },
+        {
+          "name": "recognizes-subjective-boundary",
+          "type": "contains_any",
+          "values": [
+            "not machine-checkable",
+            "not objectively",
+            "do not invent",
+            "don't invent",
+            "misleading metric",
+            "honest limitation"
+          ]
+        },
+        {
+          "name": "does-not-demand-proof-only-infrastructure",
+          "type": "not_regex",
+          "pattern": "(?is)\\b(?:you (?:must|should|need to)|(?:must|should|need to) (?:build|add|create|set up))\\b.{0,100}\\b(?:pixel[- ]diff service|database|approval workflow|new infrastructure)\\b"
+        },
+        {
+          "name": "states-material-limitation",
+          "type": "contains_any",
+          "values": [
+            "limitation",
+            "cannot prove",
+            "can't prove",
+            "does not prove",
+            "doesn't prove",
+            "subjective judgment"
+          ]
+        }
+      ],
+      "tags": [
+        "round-6",
+        "proof-contract",
+        "negative",
+        "proportionality"
       ],
       "domain": "pull-request-quality",
       "difficulty": "extended",
