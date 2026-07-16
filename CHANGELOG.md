@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
   proportionate ordinary-UI/generated-output policies, immutable GitHub URL
   checks, honest no-baseline handling, accessibility/reviewer cues, malformed
   image detection, contact-sheet guidance, JSON output, and strict mode
-- Corpus-derived visual-evidence reference based on 626 authored PRs across 52
+- Corpus-derived visual-evidence reference based on 627 authored PRs across 52
   repositories, including durable examples and observed GitHub attachment
   failure modes
 - Re-runnable `analyze_pr_visual_evidence.py` GitHub corpus scanner used to
@@ -18,6 +18,9 @@ All notable changes to this project will be documented in this file.
 - Five visual-evidence benchmark cases covering durable generated artifacts,
   honest missing baselines, no-visible-impact restraint, malformed Markdown,
   and independent correctness oracles
+- Reproducible seven-case, three-arm visual-evidence comparison with a committed
+  baseline skill snapshot, model-pinned manifest, compact result, provenance
+  hashes, diagnostic tuning history, and exact rerun commands
 
 - Visual evidence provenance guidance (inspired by beautiful-mermaid PR #22):
   caption each before/after pair with the specific defect it demonstrates,
@@ -27,6 +30,20 @@ All notable changes to this project will be documented in this file.
   `review-checklist.md`
 - Benchmark tune case `pos-renderer-evidence-provenance` and ablation
   `no-evidence-provenance` in `evals/shared-benchmark.json`
+
+### Fixed
+
+- Visual evidence audits now ignore commented/fenced placeholders, recognize
+  GitHub recording attachments, bind causal comparisons to sufficient media,
+  require an explicitly labelled baseline commit, and distinguish application
+  UI from generated rendered output
+- Readiness failures now return a non-zero exit status, while auto-detection can
+  use UI-file changes as a fallback without downgrading generated-output policy
+- Corpus analysis excludes non-rendered examples and counts relative repository
+  image paths as mutable evidence
+- Eval negation guards no longer reject “no need” answers, code-formatted `alt`
+  guidance is recognized, benchmark and ablation skill paths resolve from the
+  manifest directory, and regression tests run in CI
 
 ## [0.1.0] - 2026-03-13
 

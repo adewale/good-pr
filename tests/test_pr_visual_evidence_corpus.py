@@ -37,7 +37,9 @@ What to inspect: label clearance. Contact sheet. SHA-256 receipt.
                 "title": "Mutable evidence",
                 "url": "https://github.com/external/project/pull/2",
                 "createdAt": "2026-07-15T00:00:00Z",
-                "body": "![After](https://raw.githubusercontent.com/external/project/feature/output.png)",
+                "body": """![After](https://raw.githubusercontent.com/external/project/feature/output.png)
+![Relative evidence](docs/output.png)
+""",
             },
             {
                 "repository": {"nameWithOwner": "adewale/charts"},
@@ -48,13 +50,28 @@ What to inspect: label clearance. Contact sheet. SHA-256 receipt.
                 "body": "## Screenshots\nNot applicable: no visual change because output is byte-identical.",
             },
         ]
-        report = MODULE.analyze(prs, "adewale")
+        report = MODULE.analyze(prs, "adewale", limit=3)
         self.assertEqual(3, report["total_authored_prs"])
         self.assertEqual(2, report["self_owned_repo_prs"])
         self.assertEqual(2, report["prs_with_images"])
         self.assertEqual(1, report["sha_pinned_images"])
-        self.assertEqual(1, report["mutable_repo_image_urls"])
+        self.assertEqual(2, report["mutable_repo_image_urls"])
         self.assertEqual(1, report["explicit_no_screenshot_rationales"])
+        self.assertEqual("gh search prs --author adewale --limit 3", report["method"]["query"])
+        self.assertTrue(report["method"]["search_limit_reached"])
+
+    def test_nonrendered_image_examples_are_excluded(self) -> None:
+        body = """<!-- ![Commented](commented.png) -->
+
+```markdown
+![Fenced](fenced.png)
+```
+
+`![Inline](inline.png)`
+
+![Rendered](rendered.png)
+"""
+        self.assertEqual([("Rendered", "rendered.png")], MODULE.extract_images(body))
 
 
 if __name__ == "__main__":

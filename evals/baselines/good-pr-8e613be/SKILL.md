@@ -41,8 +41,6 @@ What does the user need help with?
 ```
 ├─ Writing a PR description     -> references/pr-template.md (blank template)
 │                                  references/pr-example.md (filled-in example)
-├─ Visual change or screenshot  -> references/visual-evidence.md
-│  evidence review                 scripts/check-visual-evidence.py
 ├─ Self-reviewing before submit -> references/review-checklist.md
 ├─ Automated readiness check    -> scripts/check-pr-readiness.sh
 ├─ Understanding what makes
@@ -81,10 +79,9 @@ If you can't reproduce the bug reliably, you can't prove your fix works.
 
 ### 2. Visual Evidence
 
-Any PR with visible UI or rendered-output impact must include reviewable visual
-evidence. A changed UI file is only a signal: if the pixels genuinely do not
-change, say why instead of manufacturing screenshots. Asking maintainers to
-pull your branch and click around is asking them to do your job.
+Any PR that touches UI must include before/after screenshots or recordings.
+Asking maintainers to pull your branch and click around is asking them to do
+your job.
 
 - **Screenshots** for static changes (layout, styling, text)
 - **Screen recordings or GIFs** for interactive or animated changes
@@ -105,46 +102,9 @@ Make the evidence trustworthy, not just present:
   there's no doubt the evidence matches the code in the PR
 - **Include the regeneration command** (e.g. `npm run render-examples`) so a
   skeptical reviewer can rebuild the evidence instead of trusting attachments
-- **Pin repository-hosted generated images to full commit SHAs**, not branch
-  names or relative paths; otherwise a later force-push or branch deletion can
-  rewrite the PR's historical evidence
-- **Tell the reviewer what to inspect** and, when the causal explanation is not
-  obvious, why the pixels changed. A compact `Before | After | Why | What to
-  inspect` table works well
-- **Use descriptive alt text** for every image. HTML `<img>` is useful for width
-  control, but it makes forgetting `alt` especially easy
-- **Caption recording attachments** with a descriptive Markdown link or nearby
-  explanation; GitHub commonly represents uploaded videos as bare
-  `user-attachments` URLs rather than image syntax
-- **Use a contact sheet for large matrices** rather than embedding dozens of
-  full-size images; link the exhaustive artifacts separately
-- **Pair screenshots with an independent oracle** when the claim is machine-
-  checkable (geometry assertion, metric, regression test, or freshness gate).
-  Pixels demonstrate the perceptual outcome; they should not be the only proof
-
-Do not fabricate a before image for a genuinely new or previously unsupported
-surface. Show the failure/unsupported baseline honestly, explain why no image
-exists, and provide after evidence.
 
 For ordinary UI work a hand-taken screenshot is fine — don't build a render
 pipeline just to fix a button color.
-
-After drafting a PR with visual impact, save the description to a Markdown file
-and run the installed checker. Resolve the script relative to this `SKILL.md`;
-do not assume the target repository has copied it into its own `scripts/`
-directory:
-
-```bash
-python3 <good-pr-skill-dir>/scripts/check-visual-evidence.py --kind ui /tmp/pr-body.md
-python3 <good-pr-skill-dir>/scripts/check-visual-evidence.py --kind generated /tmp/pr-body.md
-```
-
-Use `ui` for ordinary application screenshots and `generated` for renderers,
-charts, PDFs, image pipelines, or other programmatic output. The checker fails
-missing causal/provenance requirements, warns about accessibility and evidence
-volume, warns when no independent oracle is named, ignores commented/fenced
-placeholder Markdown, and never downloads or judges the pixels. See
-`references/visual-evidence.md` for the corpus-derived rationale and examples.
 
 ### 3. Code That Fits
 
@@ -327,12 +287,9 @@ When a user asks for help with a PR:
    starting point and fill it in together
 5. **Probe the tests** — if they have tests, ask: "does this test fail when
    you revert the fix?" If they haven't checked, tell them to check
-6. **Visual changes?** — classify the change as ordinary UI, generated output,
-   or genuinely no visible impact. For a drafted body, run
-   `scripts/check-visual-evidence.py` with the matching `--kind`; address errors
-   and report any proportional warnings. For generated output, require an
-   immutable causal baseline, SHA-pinned URLs, review cues, a regeneration
-   command, accessible alt text, and an independent correctness oracle
+6. **Visual changes?** — remind them about before/after evidence; if the
+   project renders output programmatically, suggest generated artifacts with
+   captions and a regeneration command
 7. **Be honest** — it's better to tell someone their PR needs work before they
    submit it than to let them waste a maintainer's time and damage their
    reputation in the project

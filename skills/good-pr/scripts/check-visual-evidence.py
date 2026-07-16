@@ -22,21 +22,46 @@ VISUAL_HEADING_RE = re.compile(
 )
 ANY_HEADING_RE = re.compile(r"^(#{1,6})\s+.+$", re.MULTILINE)
 MARKDOWN_IMAGE_RE = re.compile(r"!\[([^\]]*)\]\(([^)\s]+)(?:\s+[^)]*)?\)")
+ATTACHMENT_URL_PATTERN = r"https://github\.com/user-attachments/assets/[A-Za-z0-9-]+"
+MARKDOWN_ATTACHMENT_LINK_RE = re.compile(
+    rf"(?<!!)\[([^\]]+)\]\(({ATTACHMENT_URL_PATTERN})\)",
+    re.IGNORECASE,
+)
+BARE_ATTACHMENT_RE = re.compile(ATTACHMENT_URL_PATTERN, re.IGNORECASE)
 HTML_MEDIA_RE = re.compile(r"<(img|video)\b([^>]*)>", re.IGNORECASE)
 HTML_ATTRIBUTE_RE = re.compile(r"([:\w-]+)\s*=\s*([\"'])(.*?)\2", re.DOTALL)
 FULL_SHA_RE = re.compile(r"^[0-9a-f]{40}$", re.IGNORECASE)
-SHORT_SHA_RE = re.compile(r"\b[0-9a-f]{7,40}\b", re.IGNORECASE)
+HTML_COMMENT_RE = re.compile(r"<!--[\s\S]*?-->")
+FENCE_RE = re.compile(r"^\s{0,3}(`{3,}|~{3,})")
+INLINE_CODE_RE = re.compile(r"(`+)([^`\n]*?)\1")
+BASELINE_SHA_RE = re.compile(
+    r"\b(?:base|baseline)(?:\s+(?:commit|sha))?\s*(?::|=|is|at)?\s*`?([0-9a-f]{7,40})`?\b",
+    re.IGNORECASE,
+)
+CURRENT_SHA_RE = re.compile(
+    r"\b(?:current|head)(?:\s+(?:commit|sha))?\s*(?::|=|is|at)?\s*`?([0-9a-f]{7,40})`?\b",
+    re.IGNORECASE,
+)
 
 NO_VISUAL_IMPACT_RE = re.compile(
-    r"\b(?:no (?:visible|visual|rendered[- ]output|page geometry|ui) change|"
-    r"nothing visually perceptible|does not change (?:the )?(?:ui|rendered output|pixels)|"
-    r"not applicable[^\n]{0,100}(?:no visual|no rendered|because))\b",
+    r"\b(?:no (?:visible|visual) change|nothing visually perceptible|"
+    r"does not change (?:the )?pixels|"
+    r"not applicable[^\n]{0,100}(?:no visual|because))\b",
+    re.IGNORECASE,
+)
+NO_UI_IMPACT_RE = re.compile(
+    r"\b(?:no ui change|does not change (?:the )?ui)\b",
+    re.IGNORECASE,
+)
+NO_RENDERED_IMPACT_RE = re.compile(
+    r"\b(?:no (?:rendered[- ]output|page geometry) change|"
+    r"does not change (?:the )?(?:rendered output|page geometry))\b",
     re.IGNORECASE,
 )
 NO_BASELINE_RE = re.compile(
     r"\b(?:did not exist|no (?:existing|prior|previous|renderable) "
     r"(?:baseline|surface|ui|render|output)|unsupported (?:header|syntax)|"
-    r"produced no renderable output|nothing to capture|no fabricated image)\b",
+    r"produced no renderable output|nothing to capture)\b",
     re.IGNORECASE,
 )
 REGENERATION_RE = re.compile(r"\b(?:regenerat\w*|reproduc\w*)\b", re.IGNORECASE)
@@ -52,6 +77,12 @@ REVIEW_CUE_RE = re.compile(
 GENERATOR_SIGNAL_RE = re.compile(
     r"\b(?:renderer|generated artifact|contact sheet|baseline commit|evidence generator|"
     r"image pipeline|pdf pipeline|charting|diagramming)\b",
+    re.IGNORECASE,
+)
+ORACLE_RE = re.compile(
+    r"\b(?:geometry assertion|regression test|unit test|integration test|"
+    r"snapshot test|metric (?:gate|check|threshold)|freshness (?:gate|check)|"
+    r"hash(?:ed|es|ing)?|checksum|positive control|negative control)\b",
     re.IGNORECASE,
 )
 MALFORMED_URL_RE = re.compile(r"\(\s*``https?://|https?://[^\s)]+``\s*\)", re.IGNORECASE)
@@ -78,6 +109,49 @@ def read_body(path: str) -> str:
         return Path(path).read_text(encoding="utf-8")
     except OSError as exc:
         raise SystemExit(f"cannot read PR body {path!r}: {exc}") from exc
+
+
+def preserve_newlines(match: re.Match[str]) -> str:
+    return "\n" * match.group(0).count("\n")
+
+
+def strip_html_comments(text: str) -> str:
+    """Remove non-rendered HTML comments while preserving line structure."""
+    return HTML_COMMENT_RE.sub(preserve_newlines, text)
+
+
+def strip_fenced_code(text: str) -> str:
+    """Remove fenced examples whose Markdown syntax is not rendered by GitHub."""
+    output: list[str] = []
+    fence_char = ""
+    fence_length = 0
+    for line in text.splitlines(keepends=True):
+        match = FENCE_RE.match(line)
+        if not fence_char and match:
+            marker = match.group(1)
+            fence_char = marker[0]
+            fence_length = len(marker)
+            output.append("\n" if line.endswith("\n") else "")
+            continue
+        if fence_char:
+            if match:
+                marker = match.group(1)
+                if marker[0] == fence_char and len(marker) >= fence_length:
+                    fence_char = ""
+                    fence_length = 0
+            output.append("\n" if line.endswith("\n") else "")
+            continue
+        output.append(line)
+    return "".join(output)
+
+
+def strip_inline_code(text: str) -> str:
+    """Remove inline examples so image-looking code is not counted as media."""
+    return INLINE_CODE_RE.sub(lambda match: " " * len(match.group(0)), text)
+
+
+def semantic_markdown(text: str) -> str:
+    return strip_fenced_code(strip_html_comments(text))
 
 
 def visual_sections(body: str) -> list[str]:
@@ -115,6 +189,17 @@ def extract_media(text: str) -> list[Media]:
                     source=match.group(1).casefold(),
                 )
             )
+    known_urls = {item.url for item in media}
+    for match in MARKDOWN_ATTACHMENT_LINK_RE.finditer(text):
+        url = match.group(2)
+        if url not in known_urls:
+            media.append(Media(alt=match.group(1).strip(), url=url, source="attachment"))
+            known_urls.add(url)
+    for match in BARE_ATTACHMENT_RE.finditer(text):
+        url = match.group(0)
+        if url not in known_urls:
+            media.append(Media(alt="", url=url, source="attachment"))
+            known_urls.add(url)
     return media
 
 
@@ -143,26 +228,48 @@ def meaningful_alt(alt: str) -> bool:
     }
 
 
-def infer_kind(body: str, section_text: str, media: list[Media]) -> str:
-    if GENERATOR_SIGNAL_RE.search(body) and (section_text or media):
+def same_commit_ref(left: str, right: str) -> bool:
+    """Treat abbreviated and full hexadecimal names of one commit as equal."""
+    left = left.casefold()
+    right = right.casefold()
+    return left.startswith(right) or right.startswith(left)
+
+
+def infer_kind(body: str, section_text: str, media: list[Media], fallback_kind: str) -> str:
+    if GENERATOR_SIGNAL_RE.search(body):
         return "generated"
     if section_text or media:
         return "ui"
-    return "none"
+    return fallback_kind
 
 
-def audit(body: str, requested_kind: str) -> dict:
-    sections = visual_sections(body)
+def audit(body: str, requested_kind: str, fallback_kind: str = "none") -> dict:
+    comment_free_body = strip_html_comments(body)
+    semantic_body = strip_fenced_code(comment_free_body)
+    sections = visual_sections(semantic_body)
     section_text = "\n\n".join(sections)
-    media = extract_media(section_text or body)
-    kind = infer_kind(body, section_text, media) if requested_kind == "auto" else requested_kind
+    evidence_text = section_text or semantic_body
+    media = extract_media(strip_inline_code(evidence_text))
+    kind = (
+        infer_kind(semantic_body, section_text, media, fallback_kind)
+        if requested_kind == "auto"
+        else requested_kind
+    )
     findings: list[Finding] = []
 
     def add(level: str, code: str, message: str) -> None:
         findings.append(Finding(level=level, code=code, message=message))
 
-    no_impact = bool(NO_VISUAL_IMPACT_RE.search(section_text or body))
-    no_baseline = bool(NO_BASELINE_RE.search(section_text or body))
+    general_no_impact = bool(NO_VISUAL_IMPACT_RE.search(evidence_text))
+    if kind == "generated":
+        no_impact = general_no_impact or bool(NO_RENDERED_IMPACT_RE.search(evidence_text))
+    elif kind == "ui":
+        no_impact = general_no_impact or bool(
+            NO_UI_IMPACT_RE.search(evidence_text) or NO_RENDERED_IMPACT_RE.search(evidence_text)
+        )
+    else:
+        no_impact = general_no_impact
+    no_baseline = bool(NO_BASELINE_RE.search(evidence_text))
     required = kind in {"ui", "generated"} and not no_impact
 
     if required:
@@ -177,13 +284,15 @@ def audit(body: str, requested_kind: str) -> dict:
     elif no_impact:
         add("pass", "no-visual-impact", "Explicit explanation says why visual evidence is not applicable.")
 
-    evidence_text = section_text or body
     if required and media:
         has_before = bool(re.search(r"\bbefore\b", evidence_text, re.IGNORECASE))
         has_after = bool(re.search(r"\bafter\b", evidence_text, re.IGNORECASE))
-        if has_after and (has_before or no_baseline):
+        has_recording = any(item.source in {"video", "attachment"} for item in media)
+        has_comparison = has_before and has_after and (len(media) >= 2 or has_recording)
+        has_honest_after = no_baseline and has_after
+        if has_comparison or has_honest_after:
             message = "Before/after comparison found."
-            if no_baseline and not has_before:
+            if has_honest_after and not has_comparison:
                 message = "After evidence found with an explicit explanation that no honest baseline exists."
             add("pass", "causal-comparison", message)
         else:
@@ -198,7 +307,7 @@ def audit(body: str, requested_kind: str) -> dict:
         add(
             "warning",
             "alt-text",
-            f"{len(missing_alt)} asset(s) have missing or generic alt text; describe the visible claim.",
+            f"{len(missing_alt)} asset(s) have missing or generic alt/link text; describe the visible claim.",
         )
     elif media:
         add("pass", "alt-text", "Every embedded asset has descriptive alt text.")
@@ -236,7 +345,9 @@ def audit(body: str, requested_kind: str) -> dict:
         )
 
     if kind == "generated" and required:
-        has_regeneration = bool(REGENERATION_RE.search(body) and COMMAND_RE.search(body))
+        has_regeneration = bool(
+            REGENERATION_RE.search(semantic_body) and COMMAND_RE.search(comment_free_body)
+        )
         if has_regeneration:
             add("pass", "regeneration-command", "A regeneration or reproduction command is documented.")
         else:
@@ -245,12 +356,23 @@ def audit(body: str, requested_kind: str) -> dict:
                 "regeneration-command",
                 "Document the exact command that regenerates the evidence.",
             )
-        has_baseline_ref = bool(
-            re.search(r"\b(?:base|baseline|before)\b", body, re.IGNORECASE)
-            and SHORT_SHA_RE.search(body)
+        baseline_match = BASELINE_SHA_RE.search(semantic_body)
+        current_match = CURRENT_SHA_RE.search(semantic_body)
+        same_revision = bool(
+            baseline_match
+            and current_match
+            and same_commit_ref(baseline_match.group(1), current_match.group(1))
         )
-        if has_baseline_ref or no_baseline:
+        if no_baseline:
             add("pass", "baseline-provenance", "The baseline is immutable or its honest absence is explained.")
+        elif baseline_match and not same_revision:
+            add("pass", "baseline-provenance", "An explicitly labelled baseline commit is documented.")
+        elif same_revision:
+            add(
+                "error",
+                "baseline-provenance",
+                "The labelled baseline and current commits must identify different revisions.",
+            )
         else:
             add(
                 "error",
@@ -264,6 +386,14 @@ def audit(body: str, requested_kind: str) -> dict:
                 "warning",
                 "review-cue",
                 "Add a concise “What to inspect” cue so reviewers can verify a specific pixel claim.",
+            )
+        if ORACLE_RE.search(semantic_body):
+            add("pass", "independent-oracle", "An independent test, metric, control, or freshness check is named.")
+        else:
+            add(
+                "warning",
+                "independent-oracle",
+                "Name the independent test, metric, control, or freshness check that supports the visual claim.",
             )
 
     if len(media) > 12:
@@ -300,6 +430,12 @@ def parse_args() -> argparse.Namespace:
         default="auto",
         help="evidence policy to apply (default: infer from the description)",
     )
+    parser.add_argument(
+        "--fallback-kind",
+        choices=("ui", "none"),
+        default="none",
+        help="policy used when auto mode finds no signal (default: none)",
+    )
     parser.add_argument("--format", choices=("text", "json"), default="text")
     parser.add_argument(
         "--strict",
@@ -311,7 +447,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    result = audit(read_body(args.body_file), args.kind)
+    result = audit(read_body(args.body_file), args.kind, args.fallback_kind)
     if args.format == "json":
         print(json.dumps(result, indent=2, sort_keys=True))
     else:

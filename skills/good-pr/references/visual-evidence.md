@@ -52,22 +52,27 @@ after image if the description preserves the real unsupported/error baseline.
   dozens of full-size images.
 - **Markdown mistakes can silently erase evidence.** Preview the PR description.
   In particular, do not wrap an image URL in doubled backticks.
+- **Uploaded recordings are bare attachment URLs.** Give them descriptive link
+  text or a nearby caption so reviewers know the interaction and states shown.
+- **Commented or fenced examples are not evidence.** Template placeholders and
+  code samples do not render as screenshots and are ignored by the audit.
 - **A screenshot cannot prove its own correctness.** Back perceptual claims with
   tests, measurements, controls, or freshness gates when those claims are
   mechanically expressible.
 
 ## Lessons from an authored-PR corpus
 
-On 2026-07-16, a GitHub search over all 626 PRs authored by `adewale` found 595
+On 2026-07-16, a GitHub search over all 627 PRs authored by `adewale` found 596
 PRs in `adewale/*` repositories and 31 external contributions across 52
-repositories. This was a static scan of PR descriptions, not a pixel-quality
-judge. Counts will drift as PR descriptions change.
+repositories. This scan excludes image-like syntax inside HTML comments, fenced
+examples, and inline code; it does not judge pixels. Counts will drift as PR
+descriptions change.
 
-- 49 PRs embedded 204 images.
-- 43/49 image-bearing PRs discussed before and after; 40/49 discussed
+- 47 PRs embedded 198 rendered images or image tags.
+- 42/47 image-bearing PRs discussed before and after; 39/47 discussed
   regeneration or reproduction.
-- Only 27/49 used at least one SHA-pinned repository image. The corpus still
-  contained 48 repository image URLs with mutable refs.
+- Only 27/47 used at least one SHA-pinned repository image. The corpus still
+  contained 51 repository image URLs or relative paths with mutable refs.
 - 71 image embeds had missing or very short alt text.
 - Only nine image-bearing PRs explicitly told reviewers what to inspect, and
   nine used contact sheets.
@@ -115,12 +120,13 @@ multi-defect release-quality pass with regression proof.
 Run:
 
 ```bash
-python3 scripts/check-visual-evidence.py --kind ui pr-body.md
-python3 scripts/check-visual-evidence.py --kind generated --strict pr-body.md
+python3 <good-pr-skill-dir>/scripts/check-visual-evidence.py --kind ui pr-body.md
+python3 <good-pr-skill-dir>/scripts/check-visual-evidence.py --kind generated --strict pr-body.md
 ```
 
 The checker validates Markdown-level evidence contracts: section presence,
 causal before/after or honest baseline absence, descriptive alt text, immutable
 GitHub repository refs, regeneration commands, review cues, malformed URLs, and
-excessive inline volume. It intentionally does not fetch assets or decide
-whether the pixels look correct.
+excessive inline volume. Generated-output audits also warn when no independent
+test, metric, control, or freshness check is named. It intentionally does not
+fetch assets or decide whether the pixels look correct.

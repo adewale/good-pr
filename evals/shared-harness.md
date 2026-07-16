@@ -3,13 +3,13 @@
 This repo participates in the shared Skill Eval Harness:
 
 - Repo: https://github.com/adewale/skill-eval-harness
-- Version: `>=0.3.0`
+- Version: `>=0.6.0`
 - Manifest: `evals/shared-benchmark.json`
 
 Install the harness from GitHub with [uv](https://docs.astral.sh/uv/):
 
 ```sh
-uv tool install git+https://github.com/adewale/skill-eval-harness.git@v0.3.0
+uv tool install git+https://github.com/adewale/skill-eval-harness.git@v0.6.0
 ```
 
 Splits:
@@ -57,3 +57,44 @@ skill-benchmark benchmark evals/shared-benchmark.json --runs eval-runs/latest --
 ```
 
 Script assertions are deterministic repo-owned oracles and require `--allow-scripts` during grading.
+
+## Reproduce the visual-evidence comparison
+
+`evals/visual-evidence-benchmark.json` freezes the seven-case comparison used by
+PR #11. Its `old_skill` arm points to the committed snapshot of `good-pr` at
+`8e613beba912411217ae89b82fadb081a4380bb5`; no sibling checkout or temporary
+manifest edit is required.
+
+The recorded comparison uses `gpt-5.4` explicitly and low reasoning effort:
+
+```sh
+skill-benchmark validate evals/visual-evidence-benchmark.json --strict-leakage
+skill-benchmark prepare evals/visual-evidence-benchmark.json \
+  --split tune --runs-per-variant 3 --models gpt-5.4 \
+  --out /tmp/good-pr-visual-evidence-tasks.jsonl
+skill-benchmark run-codex \
+  --tasks /tmp/good-pr-visual-evidence-tasks.jsonl \
+  --runs eval-runs/visual-evidence-gpt-5.4 \
+  --codex-cmd "codex exec --json -c model_reasoning_effort=low" \
+  --timeout 600
+skill-benchmark benchmark evals/visual-evidence-benchmark.json \
+  --runs eval-runs/visual-evidence-gpt-5.4 \
+  --out /tmp/good-pr-visual-evidence-report.json
+```
+
+The committed result at `evals/results/visual-evidence-gpt-5.4.json` records the
+model, harness/baseline revisions, content-tree and artifact-inventory hashes,
+case-level scores, diagnostic grader rounds, run counts, medians, and exact
+commands. The adjacent `visual-evidence-gpt-5.4-runs.csv` preserves all 63
+run-level objective scores and execution/provenance fields. Raw model transcripts
+remain uncommitted because they are large and
+may contain provider metadata; the frozen manifest and commands are the
+reproduction path. Treat visible tune-case p-values as descriptive, not as
+holdout or confirmatory significance claims.
+
+The recorded final run attempted parallel partitions, and three workers aborted
+after successful invocations when temporary Codex-home cleanup encountered
+lingering plugin-clone paths. Only artifact sets with Harness commit markers
+were counted; missing task identities were rerun sequentially. The single
+`run-codex` command above is sequential and avoids that observed concurrency
+failure mode.

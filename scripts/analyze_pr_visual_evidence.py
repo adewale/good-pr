@@ -16,9 +16,45 @@ HTML_IMAGE_RE = re.compile(r"<img\b([^>]*)>", re.IGNORECASE)
 HTML_ATTRIBUTE_RE = re.compile(r"([:\w-]+)\s*=\s*([\"'])(.*?)\2", re.DOTALL)
 HEADING_RE = re.compile(r"^#{2,6}\s+(.+?)\s*$", re.MULTILINE)
 FULL_SHA_RE = re.compile(r"^[0-9a-f]{40}$", re.IGNORECASE)
+HTML_COMMENT_RE = re.compile(r"<!--[\s\S]*?-->")
+FENCE_RE = re.compile(r"^\s{0,3}(`{3,}|~{3,})")
+INLINE_CODE_RE = re.compile(r"(`+)([^`\n]*?)\1")
+
+
+def preserve_newlines(match: re.Match[str]) -> str:
+    return "\n" * match.group(0).count("\n")
+
+
+def strip_nonrendered_markdown(text: str, *, strip_inline: bool = True) -> str:
+    text = HTML_COMMENT_RE.sub(preserve_newlines, text)
+    output: list[str] = []
+    fence_char = ""
+    fence_length = 0
+    for line in text.splitlines(keepends=True):
+        match = FENCE_RE.match(line)
+        if not fence_char and match:
+            marker = match.group(1)
+            fence_char = marker[0]
+            fence_length = len(marker)
+            output.append("\n" if line.endswith("\n") else "")
+            continue
+        if fence_char:
+            if match:
+                marker = match.group(1)
+                if marker[0] == fence_char and len(marker) >= fence_length:
+                    fence_char = ""
+                    fence_length = 0
+            output.append("\n" if line.endswith("\n") else "")
+            continue
+        output.append(line)
+    rendered = "".join(output)
+    if strip_inline:
+        return INLINE_CODE_RE.sub(lambda match: " " * len(match.group(0)), rendered)
+    return rendered
 
 
 def extract_images(body: str) -> list[tuple[str, str]]:
+    body = strip_nonrendered_markdown(body)
     result = [
         (match.group(1).strip(), match.group(2).strip())
         for match in MARKDOWN_IMAGE_RE.finditer(body)
@@ -41,6 +77,8 @@ def repository_ref(url: str) -> tuple[bool, str | None]:
         return True, parts[2]
     if host == "github.com" and len(parts) >= 5 and parts[2] in {"blob", "raw"}:
         return True, parts[3]
+    if not parsed.scheme and not parsed.netloc:
+        return True, None
     return False, None
 
 
@@ -51,11 +89,12 @@ def normalize_headings(body: str) -> set[str]:
     }
 
 
-def analyze(prs: list[dict], author: str) -> dict:
+def analyze(prs: list[dict], author: str, limit: int = 1000) -> dict:
     rows: list[dict] = []
     for pr in prs:
-        body = pr.get("body") or ""
-        media = extract_images(body)
+        source_body = pr.get("body") or ""
+        body = strip_nonrendered_markdown(source_body, strip_inline=False)
+        media = extract_images(source_body)
         headings = normalize_headings(body)
         refs = [repository_ref(url) for _, url in media]
         pinned = sum(hosted and ref is not None and FULL_SHA_RE.fullmatch(ref) is not None for hosted, ref in refs)
@@ -108,9 +147,9 @@ def analyze(prs: list[dict], author: str) -> dict:
     repositories = Counter(row["repository"] for row in rows)
     return {
         "method": {
-            "query": f"gh search prs --author {author} --limit 1000",
-            "note": "Static PR-description analysis; images are not downloaded or judged.",
-            "search_limit_reached": len(prs) >= 1000,
+            "query": f"gh search prs --author {author} --limit {limit}",
+            "note": "Rendered-Markdown-oriented PR-description analysis; images are not downloaded or judged.",
+            "search_limit_reached": len(prs) >= limit,
         },
         "total_authored_prs": len(rows),
         "self_owned_repo_prs": sum(row["self_owned"] for row in rows),
@@ -165,7 +204,7 @@ def main() -> int:
     parser.add_argument("--author", required=True, help="GitHub login whose authored PRs should be searched")
     parser.add_argument("--limit", type=int, default=1000, help="GitHub search result limit (default: 1000)")
     args = parser.parse_args()
-    print(json.dumps(analyze(fetch_prs(args.author, args.limit), args.author), indent=2))
+    print(json.dumps(analyze(fetch_prs(args.author, args.limit), args.author, args.limit), indent=2))
     return 0
 
 

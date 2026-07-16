@@ -4,10 +4,10 @@
   "harness": {
     "name": "skill-eval-harness",
     "url": "https://github.com/adewale/skill-eval-harness",
-    "version": ">=0.4.1"
+    "version": ">=0.6.0"
   },
   "skill_paths": [
-    "skills/good-pr/SKILL.md"
+    "../skills/good-pr/SKILL.md"
   ],
   "old_skill_paths": [],
   "variants": [
@@ -887,8 +887,10 @@
           "values": [
             "caption",
             "what to look",
+            "what to inspect",
             "spot-the-difference",
             "spot the difference",
+            "label the pair",
             "label each pair",
             "label the images",
             "label the screenshots",
@@ -993,6 +995,7 @@
           "type": "contains_any",
           "values": [
             "full commit SHA",
+            "full commit-SHA",
             "full 40-character SHA",
             "40-character commit SHA",
             "immutable commit",
@@ -1008,6 +1011,9 @@
           "values": [
             "descriptive alt text",
             "meaningful alt text",
+            "descriptive `alt`",
+            "meaningful `alt`",
+            "`alt` text",
             "alt text",
             "add alt",
             "alt attributes"
@@ -1063,6 +1069,7 @@
             "don't fabricate",
             "no need to fabricate",
             "no need to invent",
+            "should not invent",
             "do not invent",
             "do not mock",
             "no valid render",
@@ -1074,7 +1081,7 @@
         {
           "name": "does-not-demand-fake-before",
           "type": "not_regex",
-          "pattern": "(?i)(must|need to|required to).{0,30}(before screenshot|before image|mock.?up)"
+          "pattern": "(?i)\\b(?:you\\s+(?:must|should|need to|are required to)\\s+|(?:must|should|required to)\\s+)(?:invent|mock(?:\\s+up)?|add|attach|provide|include)\\b.{0,40}\\b(?:before screenshot|before image|mock.?up)\\b"
         }
       ],
       "tags": [
@@ -1104,10 +1111,13 @@
           "type": "contains_any",
           "values": [
             "no screenshot",
+            "do not need before/after screenshots",
+            "do not need screenshots",
             "screenshots are not necessary",
             "screenshots aren't necessary",
             "screenshots are not needed",
             "screenshots are not useful",
+            "not proportionate",
             "no visual evidence is needed",
             "explicit explanation is sufficient",
             "not required"
@@ -1116,7 +1126,7 @@
         {
           "name": "does-not-demand-ui-file-screenshots",
           "type": "not_regex",
-          "pattern": "(?i)(must|need to|required to).{0,30}(before.?after|screenshots?)"
+          "pattern": "(?i)\\byou\\s+(?:must|should|need to|are required to)\\s+(?:add|attach|provide|include)\\b.{0,40}\\b(?:before.?after|screenshots?)\\b"
         }
       ],
       "tags": [
@@ -1161,6 +1171,7 @@
             "missing alt",
             "add alt",
             "alt text",
+            "`alt` text",
             "alt attributes",
             "meaningful `alt`",
             "descriptive `alt`"
@@ -1213,7 +1224,7 @@
         {
           "name": "requires-discriminating-visual-test",
           "type": "regex",
-          "pattern": "(?is)(assert|test|gate|metric).{0,120}(224|old behavior|without the fix|revert)"
+          "pattern": "(?is)(?:224.{0,200}(?:assert|test|gate|metric)|(?:assert|test|gate|metric).{0,200}(?:224|old behavior|without the fix|revert|fails? (?:on|if) regression))"
         }
       ],
       "tags": [
@@ -1251,7 +1262,7 @@
       "mechanism": "section",
       "class": "instructions",
       "target": {
-        "skill_root": "skills/good-pr/SKILL.md",
+        "skill_root": "../skills/good-pr/SKILL.md",
         "heading": "### 4. Tests That Prove the Fix"
       },
       "notes": "Materialized removal: runner-visible skill tree is altered by the declared mechanism/target."
@@ -1274,7 +1285,7 @@
       "mechanism": "section",
       "class": "instructions",
       "target": {
-        "skill_root": "skills/good-pr/SKILL.md",
+        "skill_root": "../skills/good-pr/SKILL.md",
         "heading": "### 7. Trust Is Earned"
       },
       "notes": "Materialized removal: runner-visible skill tree is altered by the declared mechanism/target."
@@ -1297,7 +1308,7 @@
       "mechanism": "section",
       "class": "instructions",
       "target": {
-        "skill_root": "skills/good-pr/SKILL.md",
+        "skill_root": "../skills/good-pr/SKILL.md",
         "heading": "### 2. Visual Evidence"
       },
       "notes": "Materialized removal: runner-visible skill tree is altered by the declared mechanism/target."
@@ -1324,7 +1335,7 @@
       "mechanism": "list_item",
       "class": "instructions",
       "target": {
-        "skill_root": "skills/good-pr/SKILL.md",
+        "skill_root": "../skills/good-pr/SKILL.md",
         "section": "### 2. Visual Evidence",
         "contains": [
           "regeneration command"
@@ -1351,7 +1362,7 @@
       "mechanism": "patch",
       "class": "instructions",
       "target": {
-        "skill_root": "skills/good-pr/SKILL.md",
+        "skill_root": "../skills/good-pr/SKILL.md",
         "patch": "evals/ablations/no-template.patch"
       }
     },
@@ -1375,7 +1386,7 @@
       "mechanism": "section",
       "class": "instructions",
       "target": {
-        "skill_root": "skills/good-pr/SKILL.md",
+        "skill_root": "../skills/good-pr/SKILL.md",
         "heading": "### 5. Scoped and Safe"
       },
       "notes": "Materialized removal: runner-visible skill tree is altered by the declared mechanism/target."

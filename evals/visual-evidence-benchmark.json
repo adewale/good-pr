@@ -1,0 +1,426 @@
+{
+  "version": 1,
+  "skill_name": "good-pr",
+  "harness": {
+    "name": "skill-eval-harness",
+    "url": "https://github.com/adewale/skill-eval-harness",
+    "version": ">=0.6.0"
+  },
+  "skill_paths": [
+    "../skills/good-pr/SKILL.md"
+  ],
+  "old_skill_paths": [
+    "baselines/good-pr-8e613be/SKILL.md"
+  ],
+  "variants": [
+    "with_skill",
+    "without_skill",
+    "old_skill"
+  ],
+  "optional_variants": [],
+  "split_policy": {
+    "tune": "Visible cases used during iteration. Failures may drive skill/reference edits.",
+    "holdout": "Hidden cases scored only at end-of-round or merge. Prefer prompt_ref files outside committed docs/examples.",
+    "holdback": "Examples not shown in SKILL.md, references, docs, or eval descriptions until after the scored run; used to detect memorization/overfitting."
+  },
+  "run_protocol": {
+    "paired": "Run with_skill and without_skill in the same round; optionally run old_skill from a pinned artifact/branch.",
+    "outputs": "Save outputs as runs/<case_id>/<variant>/output.md and metadata as runs/<case_id>/<variant>/metadata.json.",
+    "metadata": [
+      "elapsed_ms",
+      "input_tokens",
+      "output_tokens",
+      "total_tokens",
+      "model"
+    ],
+    "analyst_pass": "After benchmark, review saturated, flaky, non-discriminating, and with-skill-failed cases before editing the skill."
+  },
+  "notes": "Frozen seven-case visual-evidence comparison. Baseline snapshot is good-pr main at 8e613beba912411217ae89b82fadb081a4380bb5.",
+  "cases": [
+    {
+      "id": "pos-renderer-evidence-provenance",
+      "split": "tune",
+      "kind": "pr-review",
+      "prompt": "My PR fixes a label-overlap bug in our open-source SVG chart renderer. For visual evidence I attached two screenshots I took of the demo page on my laptop — one from before my change and one from after. Is that good enough, or should I do anything else with the visual evidence before submitting?",
+      "expected_behavior": [
+        "Recommend generating the before/after images from the renderer itself (base commit vs. branch) rather than hand-captured demo-page screenshots.",
+        "Recommend captioning each pair with the specific defect it demonstrates.",
+        "Recommend including the command to regenerate the artifacts so reviewers can reproduce the evidence."
+      ],
+      "assertions": [
+        {
+          "name": "suggests-generated-provenance",
+          "type": "contains_any",
+          "values": [
+            "base commit",
+            "base branch",
+            "generated from",
+            "generate the",
+            "generate them",
+            "directly from the renderer",
+            "straight from the renderer",
+            "re-render",
+            "programmatically"
+          ]
+        },
+        {
+          "name": "suggests-captions",
+          "type": "contains_any",
+          "values": [
+            "caption",
+            "what to look",
+            "what to inspect",
+            "spot-the-difference",
+            "spot the difference",
+            "label the pair",
+            "label each pair",
+            "label the images",
+            "label the screenshots",
+            "describe what each"
+          ]
+        },
+        {
+          "name": "suggests-regeneration-command",
+          "type": "contains_any",
+          "values": [
+            "regenerate",
+            "regeneration",
+            "reproduce the evidence",
+            "rebuild the evidence",
+            "command to generate",
+            "command that generates"
+          ]
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Recommends reproducible, commit-pinned visual evidence without demanding new infrastructure",
+            "Keeps the ask proportionate to a rendering-engine project",
+            "Maintainer empathy"
+          ]
+        }
+      ],
+      "tags": [
+        "round-4",
+        "evidence-provenance"
+      ],
+      "domain": "pull-request-quality",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome",
+        "style"
+      ]
+    },
+    {
+      "id": "neg-ordinary-ui-no-artifact-demand",
+      "split": "tune",
+      "kind": "adversarial",
+      "prompt": "I fixed a button color on our marketing site — changed it from gray to blue — and I already have a before/after screenshot I took on my laptop. Do I need to do anything else for the visual evidence?",
+      "expected_behavior": [
+        "Accept the hand-taken screenshot as sufficient for an ordinary UI change.",
+        "Do not demand commit-pinned generated artifacts or a regeneration command for a trivial color change."
+      ],
+      "assertions": [
+        {
+          "name": "accepts-screenshot",
+          "type": "contains_any",
+          "values": [
+            "fine",
+            "sufficient",
+            "enough",
+            "good to go",
+            "all you need",
+            "exactly right",
+            "no need to"
+          ]
+        },
+        {
+          "name": "no-artifact-overdemand",
+          "type": "not_regex",
+          "pattern": "(?i)(?:you\\s+(?:must|should|need to|required to)|(?:must|should|required)\\s+use).{0,60}(?:base commit|regeneration command|commit-pinned|re-render)",
+          "description": "Must not demand commit-pinned generated artifacts for a trivial UI change — the provenance guidance is scoped to programmatically rendered output."
+        },
+        {
+          "name": "qualitative-review",
+          "type": "judge",
+          "rubric": [
+            "Proportionality",
+            "False-positive restraint"
+          ]
+        }
+      ],
+      "tags": [
+        "round-4",
+        "evidence-provenance"
+      ],
+      "domain": "pull-request-quality",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome",
+        "style"
+      ]
+    },
+    {
+      "id": "pos-generated-evidence-durability-audit",
+      "split": "tune",
+      "kind": "pr-review",
+      "prompt": "Review this SVG renderer PR's visual-evidence section before submission. It has a before/after table and a regeneration command, but both images use raw.githubusercontent.com/acme/charts/feature-label-fix/docs/evidence.png, the HTML <img> tags have no accessibility descriptions, the table never says what a reviewer should inspect, and the PR embeds 18 separate theme/direction images inline. What should I change?",
+      "expected_behavior": [
+        "Require generated repository image URLs to use immutable full commit SHAs rather than a branch ref.",
+        "Require descriptive alt text and a precise reviewer inspection cue.",
+        "Recommend a contact sheet plus links instead of 18 full-size inline images."
+      ],
+      "assertions": [
+        {
+          "name": "requires-immutable-image-refs",
+          "type": "contains_any",
+          "values": [
+            "full commit SHA",
+            "full commit-SHA",
+            "full 40-character SHA",
+            "40-character commit SHA",
+            "immutable commit",
+            "commit-pinned",
+            "branch URL is mutable",
+            "branch ref is mutable",
+            "pin the image URLs"
+          ]
+        },
+        {
+          "name": "requires-descriptive-alt-text",
+          "type": "contains_any",
+          "values": [
+            "descriptive alt text",
+            "meaningful alt text",
+            "descriptive `alt`",
+            "meaningful `alt`",
+            "`alt` text",
+            "alt text",
+            "add alt",
+            "alt attributes"
+          ]
+        },
+        {
+          "name": "requires-review-cue",
+          "type": "contains_any",
+          "values": [
+            "what to inspect",
+            "what reviewers should inspect",
+            "what the reviewer should inspect",
+            "what to look for"
+          ]
+        },
+        {
+          "name": "recommends-contact-sheet",
+          "type": "contains_any",
+          "values": [
+            "contact sheet",
+            "composite sheet",
+            "overview image",
+            "one combined image"
+          ]
+        }
+      ],
+      "tags": [
+        "round-5",
+        "visual-evidence-audit"
+      ],
+      "domain": "pull-request-quality",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome",
+        "style"
+      ]
+    },
+    {
+      "id": "neg-new-surface-no-fake-before",
+      "split": "tune",
+      "kind": "adversarial",
+      "prompt": "I'm adding a brand-new radar renderer. The base commit rejects `radar-beta` as unsupported, so there is no honest before image. My PR shows that exact unsupported error with the base SHA, includes a SHA-pinned after render, a regeneration command, and tests. Must I invent or mock up a before screenshot to satisfy the before/after rule?",
+      "expected_behavior": [
+        "Accept the real unsupported/error baseline instead of demanding a fabricated before image.",
+        "Keep the after image, immutable baseline identification, regeneration command, and tests."
+      ],
+      "assertions": [
+        {
+          "name": "accepts-honest-unsupported-baseline",
+          "type": "contains_any",
+          "values": [
+            "do not fabricate",
+            "don't fabricate",
+            "no need to fabricate",
+            "no need to invent",
+            "should not invent",
+            "do not invent",
+            "do not mock",
+            "no valid render",
+            "unsupported baseline",
+            "error baseline",
+            "honest baseline"
+          ]
+        },
+        {
+          "name": "does-not-demand-fake-before",
+          "type": "not_regex",
+          "pattern": "(?i)\\b(?:you\\s+(?:must|should|need to|are required to)\\s+|(?:must|should|required to)\\s+)(?:invent|mock(?:\\s+up)?|add|attach|provide|include)\\b.{0,40}\\b(?:before screenshot|before image|mock.?up)\\b"
+        }
+      ],
+      "tags": [
+        "round-5",
+        "visual-evidence-audit",
+        "proportionality"
+      ],
+      "domain": "pull-request-quality",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome",
+        "style"
+      ]
+    },
+    {
+      "id": "neg-ui-file-no-visible-impact",
+      "split": "tune",
+      "kind": "adversarial",
+      "prompt": "My keyboard-navigation bug fix changes a TSX event handler, but the DOM, CSS, layout, and rendered pixels are byte-identical. The PR explains that there is no visual impact and includes the failing/passing keyboard interaction test. Do I still need to attach before/after screenshots just because a UI file changed?",
+      "expected_behavior": [
+        "Accept the explicit no-visible-impact rationale and interaction regression evidence.",
+        "Do not cargo-cult screenshots solely because a UI-related file changed."
+      ],
+      "assertions": [
+        {
+          "name": "accepts-no-visible-impact-rationale",
+          "type": "contains_any",
+          "values": [
+            "no screenshot",
+            "do not need before/after screenshots",
+            "do not need screenshots",
+            "screenshots are not necessary",
+            "screenshots aren't necessary",
+            "screenshots are not needed",
+            "screenshots are not useful",
+            "not proportionate",
+            "no visual evidence is needed",
+            "explicit explanation is sufficient",
+            "not required"
+          ]
+        },
+        {
+          "name": "does-not-demand-ui-file-screenshots",
+          "type": "not_regex",
+          "pattern": "(?i)\\byou\\s+(?:must|should|need to|are required to)\\s+(?:add|attach|provide|include)\\b.{0,40}\\b(?:before.?after|screenshots?)\\b"
+        }
+      ],
+      "tags": [
+        "round-5",
+        "visual-evidence-audit",
+        "proportionality"
+      ],
+      "domain": "pull-request-quality",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome",
+        "style"
+      ]
+    },
+    {
+      "id": "pos-malformed-visual-markdown",
+      "split": "tune",
+      "kind": "pr-review",
+      "prompt": "Audit this PR evidence Markdown: `![Before](``https://raw.githubusercontent.com/acme/charts/abc123/docs/before.png``)` followed by 16 `<img src=\"...\" width=\"320\">` theme images. The author says the screenshots render on their machine. What GitHub-specific problems should be fixed before review?",
+      "expected_behavior": [
+        "Identify the doubled-backtick image URL as malformed Markdown that may not render on GitHub.",
+        "Require descriptive alt text for the HTML image embeds.",
+        "Recommend a contact sheet or overview rather than 16 inline images."
+      ],
+      "assertions": [
+        {
+          "name": "detects-doubled-backtick-url",
+          "type": "contains_any",
+          "values": [
+            "double backticks",
+            "doubled backticks",
+            "remove the backticks",
+            "malformed Markdown",
+            "won't render",
+            "may not render"
+          ]
+        },
+        {
+          "name": "detects-missing-alt",
+          "type": "contains_any",
+          "values": [
+            "missing alt",
+            "add alt",
+            "alt text",
+            "`alt` text",
+            "alt attributes",
+            "meaningful `alt`",
+            "descriptive `alt`"
+          ]
+        },
+        {
+          "name": "compresses-large-evidence-set",
+          "type": "contains_any",
+          "values": [
+            "contact sheet",
+            "composite",
+            "overview image",
+            "one combined image"
+          ]
+        }
+      ],
+      "tags": [
+        "round-5",
+        "visual-evidence-audit"
+      ],
+      "domain": "pull-request-quality",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome",
+        "style"
+      ]
+    },
+    {
+      "id": "pos-visual-claim-needs-independent-oracle",
+      "split": "tune",
+      "kind": "pr-review",
+      "prompt": "A diagram-layout PR has a polished before/after contact sheet and says the new route is always 224 px from the target. Nothing machine-checks that number and there is no regression test; the screenshot is the only proof. Review that evidence plan.",
+      "expected_behavior": [
+        "Keep the screenshots for perceptual review but require an independent machine-checkable oracle for the 224 px contract.",
+        "Recommend a geometry assertion, metric, or regression test that fails on the old behavior."
+      ],
+      "assertions": [
+        {
+          "name": "requires-independent-oracle",
+          "type": "contains_any",
+          "values": [
+            "independent oracle",
+            "not the sole",
+            "not the only proof",
+            "geometry assertion",
+            "metric gate",
+            "machine-checkable"
+          ]
+        },
+        {
+          "name": "requires-discriminating-visual-test",
+          "type": "regex",
+          "pattern": "(?is)(?:224.{0,200}(?:assert|test|gate|metric)|(?:assert|test|gate|metric).{0,200}(?:224|old behavior|without the fix|revert|fails? (?:on|if) regression))"
+        }
+      ],
+      "tags": [
+        "round-5",
+        "visual-evidence-audit",
+        "testing"
+      ],
+      "domain": "pull-request-quality",
+      "difficulty": "extended",
+      "success_goals": [
+        "outcome",
+        "style"
+      ]
+    }
+  ],
+  "ablations": []
+}
