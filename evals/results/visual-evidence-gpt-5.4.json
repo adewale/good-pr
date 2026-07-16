@@ -1,173 +1,162 @@
 {
-  "schema_version": 1,
-  "generated_at": "2026-07-16T11:42:19Z",
-  "status": "exploratory_visible_tune_cases",
-  "interpretation": "All seven cases are visible tune cases. Exact sign-flip p-values are descriptive and are not holdout or confirmatory significance claims.",
+  "execution_integrity": {
+    "complete_artifact_sets": 81,
+    "execution_errors": 0,
+    "missing_outputs": 0,
+    "model_metadata_matches": 81,
+    "no_skill_invocations": 0,
+    "no_skill_runs": 27
+  },
+  "final_frozen_run": {
+    "old_skill": {
+      "all_runs_pass_rate": 0.2222222222,
+      "case_objective_pass_rate": {
+        "neg-new-surface-no-fake-before": 1.0,
+        "neg-ordinary-ui-no-artifact-demand": 1.0,
+        "neg-subjective-generated-proof-no-overbuild": 0.1666666667,
+        "neg-ui-file-no-visible-impact": 0.5,
+        "pos-generated-evidence-durability-audit": 0.75,
+        "pos-generated-proof-contract-end-to-end": 0.3333333333,
+        "pos-malformed-visual-markdown": 0.5555555556,
+        "pos-renderer-evidence-provenance": 0.8888888889,
+        "pos-visual-claim-needs-independent-oracle": 0.5
+      },
+      "command_count_sum": 49,
+      "mean_pass_at_1": 0.3333333333,
+      "median_elapsed_ms": 19804,
+      "median_total_tokens": 22654,
+      "objective_pass_rate": 0.6327160494
+    },
+    "with_skill": {
+      "all_runs_pass_rate": 0.4444444444,
+      "case_objective_pass_rate": {
+        "neg-new-surface-no-fake-before": 1.0,
+        "neg-ordinary-ui-no-artifact-demand": 1.0,
+        "neg-subjective-generated-proof-no-overbuild": 0.8333333333,
+        "neg-ui-file-no-visible-impact": 0.8333333333,
+        "pos-generated-evidence-durability-audit": 0.9166666667,
+        "pos-generated-proof-contract-end-to-end": 0.8888888889,
+        "pos-malformed-visual-markdown": 1.0,
+        "pos-renderer-evidence-provenance": 0.8888888889,
+        "pos-visual-claim-needs-independent-oracle": 1.0
+      },
+      "command_count_sum": 57,
+      "mean_pass_at_1": 0.7777777778,
+      "median_elapsed_ms": 21765,
+      "median_total_tokens": 37583,
+      "objective_pass_rate": 0.9290123457
+    },
+    "without_skill": {
+      "all_runs_pass_rate": 0.0,
+      "case_objective_pass_rate": {
+        "neg-new-surface-no-fake-before": 0.5,
+        "neg-ordinary-ui-no-artifact-demand": 0.8333333333,
+        "neg-subjective-generated-proof-no-overbuild": 0.6666666667,
+        "neg-ui-file-no-visible-impact": 0.6666666667,
+        "pos-generated-evidence-durability-audit": 0.6666666667,
+        "pos-generated-proof-contract-end-to-end": 0.3333333333,
+        "pos-malformed-visual-markdown": 0.5555555556,
+        "pos-renderer-evidence-provenance": 0.1111111111,
+        "pos-visual-claim-needs-independent-oracle": 0.6666666667
+      },
+      "command_count_sum": 0,
+      "mean_pass_at_1": 0.1481481481,
+      "median_elapsed_ms": 10713,
+      "median_total_tokens": 10074,
+      "objective_pass_rate": 0.5555555556
+    }
+  },
+  "generated_at": "2026-07-16T13:47:03Z",
+  "interpretation": "Visible tune cases only; statistics are descriptive, not hidden-holdout confirmation.",
+  "limitations": [
+    "All cases are visible tune cases and no qualitative judges were completed.",
+    "Harness v0.6.0 metadata does not stamp manifest or skill-tree identity; this bundle binds outputs to a clean committed source revision and verifies the final skill tree is unchanged.",
+    "Sanitized outputs omit provider events, traces, stderr, and other metadata; the committed assertion decisions and output text are the review surface.",
+    "Model execution is nondeterministic; rerunning verifies the protocol, not byte-for-byte output recreation."
+  ],
   "protocol": {
+    "cases": 9,
     "manifest": "evals/visual-evidence-benchmark.json",
-    "split": "tune",
     "model": "gpt-5.4",
+    "objective_assertions_only": true,
+    "qualitative_judges_completed": false,
     "reasoning_effort": "low",
     "runs_per_variant": 3,
-    "cases": 7,
+    "split": "tune",
+    "total_runs": 81,
     "variants": [
       "with_skill",
       "old_skill",
       "without_skill"
-    ],
-    "total_runs": 63,
-    "objective_assertions_only": true,
-    "qualitative_judges_completed": false,
-    "cost_usd": {
-      "availability": "unavailable",
-      "reason": "runner did not report provider cost"
-    }
-  },
-  "revisions": {
-    "harness_version": "0.6.0",
-    "harness_git_sha": "96013a50e0139a4886f0fe1cfa932ac5834ce02a",
-    "baseline_git_sha": "8e613beba912411217ae89b82fadb081a4380bb5",
-    "manifest_sha256": "a9df6762914e82b41515bd2ed6fcdcbefc14039ef069d014768b8efb905998e7",
-    "prepared_tasks_sha256": "42b30b75bfa3283e3a542aedec38b538d181306090dfdbdb5f68b90db743cdae",
-    "committed_run_matrix": "evals/results/visual-evidence-gpt-5.4-runs.csv",
-    "committed_run_matrix_sha256": "6510f94b00085981b1788b59baab1711b2bc61e7c9a387eadd5fb5bd423c84a5",
-    "new_skill_content_tree_sha256": "987efd77f53e50f8846e318c3e9105f57f2658ff5d11088e26574b50d21e89d7",
-    "baseline_skill_content_tree_sha256": "f48dd23178ebf81569af739007acaef33c941e3b2d808eccdf22eef17e50c5ae",
-    "artifact_commit_set_sha256": "733d7b81013843d842f4cc92b58da1f7a08ecce4238ced029eb18eadb62755ff",
-    "full_report_sha256": "2f86da89e9efe4d295c6bf3af7a16029692c39cd33892d1239510c223135859f"
-  },
-  "execution_integrity": {
-    "complete_artifact_sets": 63,
-    "missing_outputs": 0,
-    "execution_errors_in_final_artifact_sets": 0,
-    "model_metadata_matches": 63,
-    "no_skill_runs": 21,
-    "no_skill_invocations": 0,
-    "eligible_pairs": 21,
-    "blocked_pairs": 0
-  },
-  "final_frozen_run": {
-    "objective_pass_rate": {
-      "with_skill": 0.9365079365,
-      "old_skill": 0.7698412698,
-      "without_skill": 0.5238095238
-    },
-    "mean_pass_at_1": {
-      "with_skill": 0.857143,
-      "old_skill": 0.47619,
-      "without_skill": 0.142857
-    },
-    "all_runs_pass_rate": {
-      "with_skill": 0.714286,
-      "old_skill": 0.428571,
-      "without_skill": 0.0
-    },
-    "median_elapsed_ms": {
-      "with_skill": 20407,
-      "old_skill": 20670,
-      "without_skill": 12223
-    },
-    "median_total_tokens": {
-      "with_skill": 36704,
-      "old_skill": 22733,
-      "without_skill": 10079
-    },
-    "command_count_sum": {
-      "with_skill": 43,
-      "old_skill": 45,
-      "without_skill": 0
-    },
-    "with_skill_vs_without_skill": {
-      "objective_absolute_delta": 0.4126984127,
-      "normalized_gain": 0.8666666667,
-      "sign_flip_exact_p_descriptive": 0.015625
-    }
-  },
-  "case_objective_pass_rate": [
-    {
-      "case_id": "neg-new-surface-no-fake-before",
-      "with_skill": 1.0,
-      "old_skill": 1.0,
-      "without_skill": 0.5
-    },
-    {
-      "case_id": "neg-ordinary-ui-no-artifact-demand",
-      "with_skill": 1.0,
-      "old_skill": 1.0,
-      "without_skill": 0.8333333333
-    },
-    {
-      "case_id": "neg-ui-file-no-visible-impact",
-      "with_skill": 0.6666666667,
-      "old_skill": 0.5,
-      "without_skill": 0.5
-    },
-    {
-      "case_id": "pos-generated-evidence-durability-audit",
-      "with_skill": 1.0,
-      "old_skill": 0.8333333333,
-      "without_skill": 0.5
-    },
-    {
-      "case_id": "pos-malformed-visual-markdown",
-      "with_skill": 0.8888888889,
-      "old_skill": 0.5555555556,
-      "without_skill": 0.5555555556
-    },
-    {
-      "case_id": "pos-renderer-evidence-provenance",
-      "with_skill": 1.0,
-      "old_skill": 1.0,
-      "without_skill": 0.1111111111
-    },
-    {
-      "case_id": "pos-visual-claim-needs-independent-oracle",
-      "with_skill": 1.0,
-      "old_skill": 0.5,
-      "without_skill": 0.6666666667
-    }
-  ],
-  "grader_tuning_audit": {
-    "diagnostic_rounds": [
-      {
-        "round": 1,
-        "report_sha256": "d6a19c2c75c37f77451a868cbe65a6c6e620cab4d3f38697cb0ccb8fda697738",
-        "objective_pass_rate": {
-          "with_skill": 0.8492063492,
-          "old_skill": 0.6865079365,
-          "without_skill": 0.5912698413
-        },
-        "sign_flip_exact_p_descriptive": 0.0625,
-        "disposition": "Diagnostic only; variant-neutral lexical false negatives were corrected before new outputs were generated."
-      },
-      {
-        "round": 2,
-        "report_sha256": "127f7c0fd4b0d85b9950e2a4b489ff915f3429c5c6f472b0a48df9fb6852d6b2",
-        "objective_pass_rate": {
-          "with_skill": 0.9246031746,
-          "old_skill": 0.6666666667,
-          "without_skill": 0.623015873
-        },
-        "sign_flip_exact_p_descriptive": 0.03125,
-        "disposition": "Diagnostic only; the grader was generalized again and entirely fresh outputs were generated."
-      }
-    ],
-    "final_round_grader_edits_after_outputs": 0,
-    "residual_known_lexical_false_negatives": [
-      "Two correct no-visible-impact answers used 'screenshots are not applicable' or an equivalent phrasing not recognized by the positive lexical assertion.",
-      "One correct malformed-Markdown answer used 'needs an alt attribute', which was not recognized by the plural/code-formatted lexical values."
     ]
   },
-  "runner_incident": {
-    "owner": "skill-eval-harness/Codex runner lifecycle",
-    "symptom": "Three parallel workers aborted after successful invocations when TemporaryDirectory cleanup raised Errno 66 for lingering plugin-clone paths.",
-    "recovery": "Count only valid artifact-commit.json markers, generate the missing-task inventory, and rerun missing identities sequentially.",
-    "effect_on_final_result": "No partial artifact was graded; the final report contains 63 complete, execution-valid artifact sets."
+  "revisions": {
+    "baseline_git_sha": "8e613beba912411217ae89b82fadb081a4380bb5",
+    "baseline_skill_content_sha256": "3b0bf31a8ff07ed165e892748d4fa21615c684493d93103f016fe077ca9aa799",
+    "baseline_skill_git_tree": "a7a121449475c84853bd330417a5326934c16c03",
+    "baseline_snapshot": "evals/baselines/good-pr-8e613be",
+    "baseline_snapshot_content_sha256": "3b0bf31a8ff07ed165e892748d4fa21615c684493d93103f016fe077ca9aa799",
+    "canonical_tree_hash_format": "sha256 over sorted '<mode> <relative-path>\\0<bytes>\\0' records",
+    "evaluated_good_pr_git_sha": "7663c2d47ea1e3b24812d0e193ab9c4461b34ea5",
+    "evaluated_skill_content_sha256": "de58dd5e41f17a20f03bedff40daeeeedb0385f9afb76b6c781a285d6777ab54",
+    "evaluated_skill_git_tree": "5187c0a5c3adb15245d735507cac40a2c179c813",
+    "harness_git_sha": "96013a50e0139a4886f0fe1cfa932ac5834ce02a",
+    "harness_version": "0.6.0",
+    "manifest_sha256": "1f8f17b9a489c8c7346721151ec31952c80ff27cb6e45ed65985d5cb5892e9b6",
+    "run_matrix": "evals/results/visual-evidence-gpt-5.4-runs.csv",
+    "run_matrix_sha256": "256e46926fd1d897faeb580a4858481b6b6cee7730d9d49249ec1f97d080fb9f",
+    "sanitized_outputs": "evals/results/visual-evidence-gpt-5.4-outputs.jsonl",
+    "sanitized_outputs_sha256": "1f47492956a45cb826ff759dfe9d6ba599d681257996699745b778dc00b8a5ac"
   },
-  "commands": [
-    "skill-benchmark validate evals/visual-evidence-benchmark.json --strict-leakage",
-    "skill-benchmark prepare evals/visual-evidence-benchmark.json --split tune --runs-per-variant 3 --models gpt-5.4 --out /tmp/good-pr-visual-evidence-tasks.jsonl",
-    "skill-benchmark run-codex --tasks /tmp/good-pr-visual-evidence-tasks.jsonl --runs eval-runs/visual-evidence-gpt-5.4 --codex-cmd 'codex exec --json -c model_reasoning_effort=low' --timeout 600",
-    "skill-benchmark benchmark evals/visual-evidence-benchmark.json --runs eval-runs/visual-evidence-gpt-5.4 --out /tmp/good-pr-visual-evidence-report.json"
-  ]
+  "runner_issue": "https://github.com/adewale/skill-eval-harness/issues/45",
+  "schema_version": 2,
+  "status": "exploratory_visible_tune_cases",
+  "with_skill_vs_old_skill": {
+    "absolute_delta": 0.2962962963,
+    "candidate": "with_skill",
+    "case_objective_pass_rate_delta": {
+      "neg-new-surface-no-fake-before": 0.0,
+      "neg-ordinary-ui-no-artifact-demand": 0.0,
+      "neg-subjective-generated-proof-no-overbuild": 0.6666666666,
+      "neg-ui-file-no-visible-impact": 0.3333333333,
+      "pos-generated-evidence-durability-audit": 0.1666666667,
+      "pos-generated-proof-contract-end-to-end": 0.5555555556,
+      "pos-malformed-visual-markdown": 0.4444444444,
+      "pos-renderer-evidence-provenance": 0.0,
+      "pos-visual-claim-needs-independent-oracle": 0.5
+    },
+    "negative_delta_cases": [],
+    "reference": "old_skill",
+    "significance": {
+      "method": "case-mean-sign-flip-exact",
+      "n": 9,
+      "observed_mean_delta": 0.2962962963,
+      "p_value": 0.03125,
+      "significant_at_0_05": true
+    }
+  },
+  "with_skill_vs_without_skill": {
+    "absolute_delta": 0.3734567901,
+    "candidate": "with_skill",
+    "case_objective_pass_rate_delta": {
+      "neg-new-surface-no-fake-before": 0.5,
+      "neg-ordinary-ui-no-artifact-demand": 0.1666666667,
+      "neg-subjective-generated-proof-no-overbuild": 0.1666666666,
+      "neg-ui-file-no-visible-impact": 0.1666666666,
+      "pos-generated-evidence-durability-audit": 0.25,
+      "pos-generated-proof-contract-end-to-end": 0.5555555556,
+      "pos-malformed-visual-markdown": 0.4444444444,
+      "pos-renderer-evidence-provenance": 0.7777777778,
+      "pos-visual-claim-needs-independent-oracle": 0.3333333333
+    },
+    "negative_delta_cases": [],
+    "reference": "without_skill",
+    "significance": {
+      "method": "case-mean-sign-flip-exact",
+      "n": 9,
+      "observed_mean_delta": 0.3734567901,
+      "p_value": 0.00390625,
+      "significant_at_0_05": true
+    }
+  }
 }

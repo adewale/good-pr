@@ -17,12 +17,13 @@ All notable changes to this project will be documented in this file.
   reproduce the aggregate evidence metrics and exemplar ranking
 - Versioned row-level corpus receipt with observation timestamps, PR/body
   hashes, and extracted features while omitting PR body text
-- Seven visual-evidence benchmark cases covering durable generated artifacts,
+- Nine visual-evidence benchmark cases covering durable generated artifacts,
   honest missing baselines, no-visible-impact restraint, malformed Markdown,
-  and independent correctness oracles
+  independent correctness oracles, the full proof contract, and restraint for
+  subjective evidence
 - Reproducible nine-case, three-arm visual-evidence comparison with a committed
   baseline skill snapshot, model-pinned manifest, compact result, provenance
-  hashes, diagnostic tuning history, and exact rerun commands
+  hashes, sanitized row-level outputs, and exact rerun commands
 - Sanitized output/per-assertion eval proof bundle, source/tree binding, and a
   CI verifier for the manifest, run matrix, outputs, and frozen baseline
 - Compact generated-output proof contract covering a named claim and input,

@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import itertools
 import json
 import statistics
 import subprocess
@@ -37,6 +38,35 @@ def hash_tree(path: Path) -> str:
     return digest.hexdigest()
 
 
+def hash_git_tree(ref: str, path: str) -> str:
+    """Hash a Git subtree with the same canonical format as ``hash_tree``."""
+    listing = subprocess.run(
+        ["git", "ls-tree", "-r", "-z", f"{ref}:{path}"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+    ).stdout
+    digest = hashlib.sha256()
+    entries = []
+    for entry in (part for part in listing.split(b"\0") if part):
+        metadata, relative = entry.split(b"\t", 1)
+        entries.append((relative, metadata))
+    for relative, metadata in sorted(entries):
+        mode, object_type, object_id = metadata.decode().split()
+        if object_type != "blob" or mode not in {"100644", "100755"}:
+            raise SystemExit(f"unsupported Git tree entry: {metadata.decode()}")
+        blob = subprocess.run(
+            ["git", "cat-file", "blob", object_id],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+        ).stdout
+        digest.update(mode.encode() + b" " + relative + b"\0")
+        digest.update(blob)
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
 def git(*args: str) -> str:
     return subprocess.run(
         ["git", *args], cwd=ROOT, check=True, capture_output=True, text=True
@@ -47,12 +77,53 @@ def write_json(path: Path, value: object) -> None:
     path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def repo_relative(path: Path) -> Path:
+    """Return a normalized repo-relative path or reject paths outside the repo."""
+    try:
+        return path.resolve().relative_to(ROOT)
+    except ValueError as error:
+        raise SystemExit(f"path must be inside the repository: {path}") from error
+
+
 def identity(record: dict) -> tuple[str, str, int]:
     return record["case_id"], record["variant"], int(record["run_number"])
 
 
 def mean(values: list[float]) -> float:
     return round(sum(values) / len(values), 10) if values else 0.0
+
+
+def compare_variants(aggregate: dict, candidate: str, reference: str) -> dict:
+    candidate_cases = aggregate[candidate]["case_objective_pass_rate"]
+    reference_cases = aggregate[reference]["case_objective_pass_rate"]
+    deltas = {
+        case_id: round(candidate_cases[case_id] - reference_cases[case_id], 10)
+        for case_id in sorted(candidate_cases)
+    }
+    observed = abs(mean(list(deltas.values())))
+    permutations = [
+        abs(mean([sign * delta for sign, delta in zip(signs, deltas.values())]))
+        for signs in itertools.product((-1, 1), repeat=len(deltas))
+    ]
+    p_value = sum(value >= observed - 1e-12 for value in permutations) / len(permutations)
+    return {
+        "candidate": candidate,
+        "reference": reference,
+        "absolute_delta": round(
+            aggregate[candidate]["objective_pass_rate"]
+            - aggregate[reference]["objective_pass_rate"],
+            10,
+        ),
+        "case_objective_pass_rate_delta": deltas,
+        "negative_delta_cases": [case_id for case_id, delta in deltas.items() if delta < 0],
+        "significance": {
+            "method": "case-mean-sign-flip-exact",
+            "n": len(deltas),
+            "observed_mean_delta": round(observed, 10),
+            "p_value": round(p_value, 10),
+            "significant_at_0_05": p_value < 0.05,
+        },
+    }
 
 
 def build(args: argparse.Namespace) -> int:
@@ -62,6 +133,19 @@ def build(args: argparse.Namespace) -> int:
     expected = len(manifest["cases"]) * len(VARIANTS) * args.runs_per_variant
     if len(results) != expected:
         raise SystemExit(f"expected {expected} graded results, found {len(results)}")
+
+    current_tree = git("rev-parse", f"{args.evaluated_sha}:skills/good-pr")
+    baseline_tree = git("rev-parse", f"{args.baseline_sha}:skills/good-pr")
+    current_content_hash = hash_git_tree(args.evaluated_sha, "skills/good-pr")
+    baseline_content_hash = hash_git_tree(args.baseline_sha, "skills/good-pr")
+    baseline_snapshot_hash = hash_tree(args.baseline_snapshot)
+    if baseline_content_hash != baseline_snapshot_hash:
+        raise SystemExit("frozen baseline snapshot differs from the baseline Git tree")
+    if git("rev-parse", "HEAD:skills/good-pr") != current_tree:
+        raise SystemExit("HEAD skill tree differs from the evaluated source commit")
+    if git("status", "--porcelain", "--untracked-files=all", "--", "skills/good-pr"):
+        raise SystemExit("installed skill has uncommitted changes; commit it before evaluation")
+    manifest_hash = sha256_file(args.manifest)
 
     proof_records: list[dict] = []
     csv_rows: list[dict] = []
@@ -82,6 +166,15 @@ def build(args: argparse.Namespace) -> int:
         output = output_path.read_text(encoding="utf-8")
         commit = json.loads(commit_path.read_text(encoding="utf-8"))
         metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        if variant not in VARIANTS:
+            raise SystemExit(f"unexpected variant: {variant}")
+        if not result.get("execution_valid"):
+            raise SystemExit(f"invalid execution cannot enter proof bundle: {key}")
+        if result.get("model") != args.model:
+            raise SystemExit(f"model mismatch for {key}: {result.get('model')}")
+        expected_invocation = variant != "without_skill"
+        if bool(metadata.get("skill_invoked")) != expected_invocation:
+            raise SystemExit(f"skill invocation boundary mismatch: {key}")
         output_hash = sha256_bytes(output.encode())
         if commit.get("inventory_sha256", {}).get("output.md") != output_hash:
             raise SystemExit(f"artifact inventory mismatch: {output_path}")
@@ -104,6 +197,18 @@ def build(args: argparse.Namespace) -> int:
             "objective_total": result["objective_total"],
             "execution_valid": result["execution_valid"],
             "skill_invoked": metadata.get("skill_invoked"),
+            "provenance": {
+                "manifest_sha256": manifest_hash,
+                "evaluated_good_pr_git_sha": args.evaluated_sha,
+                "evaluated_skill_git_tree": current_tree,
+                "baseline_git_sha": args.baseline_sha,
+                "baseline_skill_git_tree": baseline_tree,
+                "active_skill_git_tree": (
+                    current_tree
+                    if variant == "with_skill"
+                    else baseline_tree if variant == "old_skill" else None
+                ),
+            },
             "assertions": assertions,
             "output": output,
         }
@@ -124,6 +229,13 @@ def build(args: argparse.Namespace) -> int:
                 "commands": metadata.get("commands"),
                 "output_sha256": output_hash,
                 "artifact_commit_sha256": commit_hash,
+                "manifest_sha256": manifest_hash,
+                "evaluated_good_pr_git_sha": args.evaluated_sha,
+                "active_skill_git_tree": (
+                    current_tree
+                    if variant == "with_skill"
+                    else baseline_tree if variant == "old_skill" else ""
+                ),
             }
         )
 
@@ -136,7 +248,9 @@ def build(args: argparse.Namespace) -> int:
     csv_path = args.out_dir / f"{args.name}-runs.csv"
     fieldnames = list(csv_rows[0])
     with csv_path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames, quoting=csv.QUOTE_ALL)
+        writer = csv.DictWriter(
+            handle, fieldnames=fieldnames, quoting=csv.QUOTE_ALL, lineterminator="\n"
+        )
         writer.writeheader()
         writer.writerows(csv_rows)
 
@@ -169,8 +283,6 @@ def build(args: argparse.Namespace) -> int:
             "case_objective_pass_rate": case_rates,
         }
 
-    current_tree = git("rev-parse", f"{args.evaluated_sha}:skills/good-pr")
-    baseline_tree = git("rev-parse", f"{args.baseline_sha}:skills/good-pr")
     summary_path = args.out_dir / f"{args.name}.json"
     summary = {
         "schema_version": 2,
@@ -178,7 +290,7 @@ def build(args: argparse.Namespace) -> int:
         "status": "exploratory_visible_tune_cases",
         "interpretation": "Visible tune cases only; statistics are descriptive, not hidden-holdout confirmation.",
         "protocol": {
-            "manifest": str(args.manifest.relative_to(ROOT)),
+            "manifest": repo_relative(args.manifest).as_posix(),
             "split": "tune",
             "model": args.model,
             "reasoning_effort": "low",
@@ -194,13 +306,16 @@ def build(args: argparse.Namespace) -> int:
             "harness_git_sha": args.harness_sha,
             "evaluated_good_pr_git_sha": args.evaluated_sha,
             "evaluated_skill_git_tree": current_tree,
+            "evaluated_skill_content_sha256": current_content_hash,
             "baseline_git_sha": args.baseline_sha,
             "baseline_skill_git_tree": baseline_tree,
-            "baseline_snapshot_content_sha256": hash_tree(args.baseline_snapshot),
-            "manifest_sha256": sha256_file(args.manifest),
-            "run_matrix": str(csv_path.relative_to(ROOT)),
+            "baseline_skill_content_sha256": baseline_content_hash,
+            "baseline_snapshot": repo_relative(args.baseline_snapshot).as_posix(),
+            "baseline_snapshot_content_sha256": baseline_snapshot_hash,
+            "manifest_sha256": manifest_hash,
+            "run_matrix": repo_relative(csv_path).as_posix(),
             "run_matrix_sha256": sha256_file(csv_path),
-            "sanitized_outputs": str(outputs_path.relative_to(ROOT)),
+            "sanitized_outputs": repo_relative(outputs_path).as_posix(),
             "sanitized_outputs_sha256": sha256_file(outputs_path),
             "canonical_tree_hash_format": "sha256 over sorted '<mode> <relative-path>\\0<bytes>\\0' records",
         },
@@ -213,7 +328,10 @@ def build(args: argparse.Namespace) -> int:
             "no_skill_invocations": sum(bool(row["metadata"].get("skill_invoked")) for row in by_variant["without_skill"]),
         },
         "final_frozen_run": aggregate,
-        "with_skill_vs_without_skill": report.get("paired_summary"),
+        "with_skill_vs_without_skill": compare_variants(
+            aggregate, "with_skill", "without_skill"
+        ),
+        "with_skill_vs_old_skill": compare_variants(aggregate, "with_skill", "old_skill"),
         "limitations": [
             "All cases are visible tune cases and no qualitative judges were completed.",
             "Harness v0.6.0 metadata does not stamp manifest or skill-tree identity; this bundle binds outputs to a clean committed source revision and verifies the final skill tree is unchanged.",
@@ -231,6 +349,7 @@ def verify_summary(summary_path: Path) -> int:
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
     revisions = summary["revisions"]
     manifest = ROOT / summary["protocol"]["manifest"]
+    manifest_data = json.loads(manifest.read_text(encoding="utf-8"))
     csv_path = ROOT / revisions["run_matrix"]
     outputs_path = ROOT / revisions["sanitized_outputs"]
     checks = {
@@ -247,25 +366,108 @@ def verify_summary(summary_path: Path) -> int:
     record_by_id = {identity(record): record for record in records}
     if len(record_by_id) != len(records):
         raise SystemExit("duplicate identities in sanitized outputs")
+    expected_identities = {
+        (case["id"], variant, run_number)
+        for case in manifest_data["cases"]
+        for variant in summary["protocol"]["variants"]
+        for run_number in range(1, summary["protocol"]["runs_per_variant"] + 1)
+    }
+    if set(record_by_id) != expected_identities:
+        missing = sorted(expected_identities - set(record_by_id))
+        extra = sorted(set(record_by_id) - expected_identities)
+        raise SystemExit(f"eval identity matrix mismatch; missing={missing}, extra={extra}")
     for record in records:
         if sha256_bytes(record["output"].encode()) != record["output_sha256"]:
             raise SystemExit(f"output hash mismatch: {identity(record)}")
+        expected_invocation = record["variant"] != "without_skill"
+        if record["execution_valid"] is not True:
+            raise SystemExit(f"invalid execution in proof bundle: {identity(record)}")
+        if bool(record["skill_invoked"]) != expected_invocation:
+            raise SystemExit(f"skill invocation boundary mismatch: {identity(record)}")
+        if record["model"] != summary["protocol"]["model"]:
+            raise SystemExit(f"model mismatch: {identity(record)}")
+        provenance = record["provenance"]
+        expected_active_tree = (
+            revisions["evaluated_skill_git_tree"]
+            if record["variant"] == "with_skill"
+            else revisions["baseline_skill_git_tree"]
+            if record["variant"] == "old_skill"
+            else None
+        )
+        if provenance != {
+            "manifest_sha256": revisions["manifest_sha256"],
+            "evaluated_good_pr_git_sha": revisions["evaluated_good_pr_git_sha"],
+            "evaluated_skill_git_tree": revisions["evaluated_skill_git_tree"],
+            "baseline_git_sha": revisions["baseline_git_sha"],
+            "baseline_skill_git_tree": revisions["baseline_skill_git_tree"],
+            "active_skill_git_tree": expected_active_tree,
+        }:
+            raise SystemExit(f"run provenance mismatch: {identity(record)}")
     with csv_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle))
     if len(rows) != len(records):
         raise SystemExit("run matrix and sanitized output counts differ")
+    row_identities = {
+        (row["case_id"], row["variant"], int(row["run_number"])) for row in rows
+    }
+    if row_identities != expected_identities or len(row_identities) != len(rows):
+        raise SystemExit("run matrix identities do not match the manifest")
     for row in rows:
         key = row["case_id"], row["variant"], int(row["run_number"])
         record = record_by_id.get(key)
-        if not record or row["output_sha256"] != record["output_sha256"]:
+        if (
+            not record
+            or row["output_sha256"] != record["output_sha256"]
+            or row["artifact_commit_sha256"] != record["artifact_commit_sha256"]
+            or int(row["objective_passed"]) != record["objective_passed"]
+            or int(row["objective_total"]) != record["objective_total"]
+            or row["manifest_sha256"] != revisions["manifest_sha256"]
+            or row["evaluated_good_pr_git_sha"] != revisions["evaluated_good_pr_git_sha"]
+            or row["active_skill_git_tree"]
+            != (record["provenance"]["active_skill_git_tree"] or "")
+        ):
             raise SystemExit(f"run matrix output binding mismatch: {key}")
 
+    evaluated_tree = git(
+        "rev-parse", f"{revisions['evaluated_good_pr_git_sha']}:skills/good-pr"
+    )
+    baseline_tree = git("rev-parse", f"{revisions['baseline_git_sha']}:skills/good-pr")
+    if evaluated_tree != revisions["evaluated_skill_git_tree"]:
+        raise SystemExit("evaluated source commit has the wrong skill tree")
+    if baseline_tree != revisions["baseline_skill_git_tree"]:
+        raise SystemExit("baseline source commit has the wrong skill tree")
     current_tree = git("rev-parse", "HEAD:skills/good-pr")
-    if current_tree != revisions["evaluated_skill_git_tree"]:
+    if current_tree != evaluated_tree:
         raise SystemExit("installed skill tree changed after the evaluated source commit")
-    baseline = ROOT / "evals/baselines/good-pr-8e613be"
+    if git("status", "--porcelain", "--untracked-files=all", "--", "skills/good-pr"):
+        raise SystemExit("installed skill has uncommitted changes")
+    if (
+        hash_git_tree(revisions["evaluated_good_pr_git_sha"], "skills/good-pr")
+        != revisions["evaluated_skill_content_sha256"]
+    ):
+        raise SystemExit("evaluated skill content hash mismatch")
+    if (
+        hash_git_tree(revisions["baseline_git_sha"], "skills/good-pr")
+        != revisions["baseline_skill_content_sha256"]
+    ):
+        raise SystemExit("baseline skill content hash mismatch")
+    baseline = ROOT / revisions["baseline_snapshot"]
     if hash_tree(baseline) != revisions["baseline_snapshot_content_sha256"]:
         raise SystemExit("frozen baseline snapshot content hash mismatch")
+    if hash_tree(baseline) != revisions["baseline_skill_content_sha256"]:
+        raise SystemExit("frozen baseline snapshot differs from the baseline Git tree")
+
+    computed_rates: dict[str, list[float]] = defaultdict(list)
+    for record in records:
+        computed_rates[record["variant"]].append(
+            record["objective_passed"] / record["objective_total"]
+        )
+    for variant in summary["protocol"]["variants"]:
+        if abs(
+            mean(computed_rates[variant])
+            - summary["final_frozen_run"][variant]["objective_pass_rate"]
+        ) > 1e-9:
+            raise SystemExit(f"aggregate objective pass rate mismatch: {variant}")
     expected = summary["protocol"]["total_runs"]
     if len(records) != expected or summary["execution_integrity"]["complete_artifact_sets"] != expected:
         raise SystemExit("proof bundle does not contain the declared complete run matrix")

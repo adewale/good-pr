@@ -106,9 +106,11 @@ python3 scripts/build_eval_evidence.py verify \
 Treat visible tune-case statistics as descriptive, not as holdout or
 confirmatory significance claims.
 
-The recorded final run attempted parallel partitions, and three workers aborted
-after successful invocations when temporary Codex-home cleanup encountered
-lingering plugin-clone paths. Only artifact sets with Harness commit markers
-were counted; missing task identities were rerun sequentially. The single
-`run-codex` command above is sequential and avoids that observed concurrency
-failure mode.
+The recorded final run used the single sequential `run-codex` command above:
+all 81 task identities produced complete Harness commit markers and no cleanup
+failure occurred. Parallel runs on the same pinned Harness revision can hit the
+temporary Codex-home cleanup race tracked in
+[Skill Eval Harness #45](https://github.com/adewale/skill-eval-harness/issues/45);
+[PR #46](https://github.com/adewale/skill-eval-harness/pull/46) is the proposed
+runner fix. Keeping this frozen comparison sequential isolates the skill change
+from that runner defect.
