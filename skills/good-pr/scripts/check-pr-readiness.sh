@@ -67,33 +67,29 @@ fi
 # Check 5: Console/debug statements
 DEBUG=$(git diff "$BASE"...HEAD | grep -E '^\+' | grep -vE '^\+\+\+' | grep -iE '(console\.log|debugger|binding\.pry|import pdb|print\()' | head -5 || true)
 if [ -n "$DEBUG" ]; then
-    echo "$WARN  Possible debug statements in diff:"
-    echo "$DEBUG" | sed 's/^/       /'
+    echo "$WARN  Possible debug statements added; inspect the diff before publishing"
 else
     echo "$PASS  No debug statements detected"
 fi
 
 # Check 6: UI files changed (screenshots needed?)
 UI_FILES=$(git diff "$BASE"...HEAD --name-only | grep -icE '\.(jsx|tsx|vue|svelte|css|scss|html|erb|astro|mdx)$' || true)
-GENERATED_FILES=$(git diff "$BASE"...HEAD --name-only | grep -icE '(^|/)(render|renderer|diagram|chart|image|pdf|visual|screenshot)|\.(svg|pdf)$' || true)
 if [ "$UI_FILES" -gt 0 ]; then
     echo "$WARN  $UI_FILES UI-related files changed — include captioned before/after screenshots, or explain why pixels do not change"
 else
     echo "$PASS  No UI files changed"
 fi
 
-# Check 7: Audit drafted visual evidence when a PR body is supplied
+# Check 7: Lint drafted visual evidence when a PR body is supplied
 if [ -n "$PR_BODY_FILE" ]; then
     if [ ! -f "$PR_BODY_FILE" ]; then
         echo "$FAIL  PR body file does not exist: $PR_BODY_FILE"
         FAILURES=1
     elif ! command -v python3 >/dev/null 2>&1; then
-        echo "$WARN  python3 is unavailable; skipped visual-evidence audit"
+        echo "$WARN  python3 is unavailable; skipped visual-evidence lint"
     else
         EVIDENCE_ARGS=(--kind "$EVIDENCE_KIND")
-        if [ "$EVIDENCE_KIND" = "auto" ] && [ "$GENERATED_FILES" -gt 0 ]; then
-            EVIDENCE_ARGS=(--kind generated)
-        elif [ "$EVIDENCE_KIND" = "auto" ] && [ "$UI_FILES" -gt 0 ]; then
+        if [ "$EVIDENCE_KIND" = "auto" ] && [ "$UI_FILES" -gt 0 ]; then
             EVIDENCE_ARGS+=(--fallback-kind ui)
         fi
         EXPECTED_BASE=$(git merge-base "$BASE" HEAD)
@@ -101,16 +97,14 @@ if [ -n "$PR_BODY_FILE" ]; then
         EVIDENCE_ARGS+=(--expected-base-sha "$EXPECTED_BASE" --expected-current-sha "$EXPECTED_CURRENT")
         echo ""
         if python3 "$SCRIPT_DIR/check-visual-evidence.py" "${EVIDENCE_ARGS[@]}" "$PR_BODY_FILE"; then
-            echo "$PASS  Visual-evidence audit completed"
+            echo "$PASS  Visual-evidence lint completed"
         else
-            echo "$FAIL  Visual-evidence audit found blocking issues"
+            echo "$FAIL  Visual-evidence lint found blocking issues"
             FAILURES=1
         fi
     fi
 elif [ "$UI_FILES" -gt 0 ]; then
-    echo "$WARN  Pass a PR body file as argument 2 to audit its visual evidence"
-elif [ "$GENERATED_FILES" -gt 0 ]; then
-    echo "$WARN  Generated-output-related files changed; pass a PR body and explicit generated evidence kind"
+    echo "$WARN  Pass a PR body file as argument 2 to lint its visual evidence"
 fi
 
 echo ""

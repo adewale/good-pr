@@ -66,7 +66,7 @@ skills/good-pr/
 │   └── visual-evidence.md        # Screenshot policy, pitfalls, and examples
 └── scripts/
     ├── check-pr-readiness.sh     # Automated PR hygiene checks
-    └── check-visual-evidence.py  # PR Markdown evidence/provenance audit
+    └── check-visual-evidence.py  # Mechanical PR Markdown lint
 ```
 
 Repository-only evidence lives outside the installable skill: `evidence/`
@@ -89,17 +89,22 @@ bash skills/good-pr/scripts/check-pr-readiness.sh main
 ```
 
 Pass a drafted PR body as the second argument. Use the optional third argument
-to override heuristic classification for generated output:
+to choose `generated` when programmatic output changes, or `none` after you have
+documented why the change has no visible impact:
 
 ```bash
 bash skills/good-pr/scripts/check-pr-readiness.sh main /tmp/pr-body.md
 bash skills/good-pr/scripts/check-pr-readiness.sh main /tmp/pr-body.md generated
+bash skills/good-pr/scripts/check-pr-readiness.sh main /tmp/pr-body.md none
 ```
 
-Or run the evidence audit directly. `ui` accepts proportionate hand-taken
-screenshots; `generated` additionally checks the labelled claim/input/base/head
-contract, a regeneration command or receipt, an associated oracle when
-machine-checkable, and a material limitation:
+Or run the evidence lint directly. It checks only mechanical properties such as
+section/media presence, Markdown mistakes, alt/link text, immutable
+repository URLs, and labelled base/head SHAs. The skill text—not this
+script—asks the agent and reviewer to judge the visible claim, same input,
+reproduction path, correctness check, limitation, and proportionality.
+Direct `generated` mode validates SHA shape; the readiness wrapper additionally
+binds those labels to the checked-out merge-base and HEAD.
 
 ```bash
 python3 skills/good-pr/scripts/check-visual-evidence.py --kind ui /tmp/pr-body.md

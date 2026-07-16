@@ -88,6 +88,18 @@ class EvalAssertionTests(unittest.TestCase):
         self.assertIsNone(re.search(pattern, policy_exception))
         self.assertIsNotNone(re.search(pattern, "You should attach screenshots."))
 
+    def test_proof_infrastructure_guard_understands_negation(self) -> None:
+        pattern = next(
+            item
+            for case in VISUAL_MANIFEST["cases"]
+            if case["id"] == "neg-subjective-generated-proof-no-overbuild"
+            for item in case["assertions"]
+            if item["name"] == "does-not-demand-proof-only-infrastructure"
+        )["pattern"]
+        self.assertIsNone(re.search(pattern, "You should not build new infrastructure for this proof."))
+        self.assertIsNone(re.search(pattern, "You should avoid adding a pixel-diff service."))
+        self.assertIsNotNone(re.search(pattern, "You should build a pixel-diff service for this proof."))
+
 
 if __name__ == "__main__":
     unittest.main()

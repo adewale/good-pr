@@ -556,7 +556,7 @@
         {
           "name": "does-not-demand-proof-only-infrastructure",
           "type": "not_regex",
-          "pattern": "(?is)\\b(?:you (?:must|should|need to)|(?:must|should|need to) (?:build|add|create|set up))\\b.{0,100}\\b(?:pixel[- ]diff service|database|approval workflow|new infrastructure)\\b"
+          "pattern": "(?is)\\b(?:you\\s+)?(?:must|should|need to)\\s+(?!(?:not|avoid|skip|refrain)\\b)(?:build|add|create|set up)\\b.{0,100}\\b(?:pixel[- ]diff service|database|approval workflow|new infrastructure)\\b"
         },
         {
           "name": "states-material-limitation",

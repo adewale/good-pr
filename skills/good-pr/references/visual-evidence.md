@@ -144,7 +144,7 @@ for measurable eval infrastructure, and
 [`geist_fabrik#80`](https://github.com/adewale/geist_fabrik/pull/80) for a
 multi-defect release-quality pass with regression proof.
 
-## Automated audit
+## Mechanical lint
 
 Run:
 
@@ -153,11 +153,11 @@ python3 <good-pr-skill-dir>/scripts/check-visual-evidence.py --kind ui pr-body.m
 python3 <good-pr-skill-dir>/scripts/check-visual-evidence.py --kind generated --strict pr-body.md
 ```
 
-The checker validates Markdown-level evidence contracts: section presence,
-causal before/after or honest baseline absence, descriptive alt text, immutable
-GitHub repository refs, labelled claim/input/base/head fields, regeneration
-commands or receipts, review cues, limitations, malformed URLs, and excessive
-inline volume. Generated-output audits warn when no associated independent
-check is named. The readiness wrapper accepts an explicit third argument
-(`ui`, `generated`, or `none`) and supplies the actual merge-base/head SHAs. The
-checker does not fetch assets or decide whether the pixels look correct.
+The linter validates mechanical properties only: section/media presence,
+alt/link-text presence, immutable repository refs, generated base/head labels,
+and malformed URLs. The readiness wrapper accepts an
+explicit third argument (`ui`, `generated`, or `none`) and supplies the actual
+merge-base/head SHAs. Direct generated mode checks only that SHA-like labels are
+present. The linter does not fetch assets or decide whether the claim, input,
+reproduction path, independent check, limitation, or pixels are valid. Review
+those semantic parts with the compact proof contract above.

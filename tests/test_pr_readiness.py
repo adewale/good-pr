@@ -33,7 +33,7 @@ class ReadinessIntegrationTests(unittest.TestCase):
             run(["git", "-c", "commit.gpgsign=false", "commit", "-m", "change button"], directory).returncode,
         )
 
-    def test_wrapper_propagates_missing_body_and_audit_failures(self) -> None:
+    def test_wrapper_propagates_missing_body_and_lint_failures(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             repo = Path(tmp)
             self.make_repo(repo)
@@ -46,10 +46,10 @@ class ReadinessIntegrationTests(unittest.TestCase):
             body.write_text("## What\n\nFix renderer clipping in generated charts.\n", encoding="utf-8")
             failed = run(["bash", str(SCRIPT), "main", str(body)], repo)
             self.assertEqual(1, failed.returncode, failed.stdout)
-            self.assertIn("Visual Evidence Audit (generated)", failed.stdout)
-            self.assertIn("Visual-evidence audit found blocking issues", failed.stdout)
+            self.assertIn("Visual Evidence Lint (ui)", failed.stdout)
+            self.assertIn("Visual-evidence lint found blocking issues", failed.stdout)
 
-    def test_wrapper_uses_ui_fallback_and_accepts_honest_no_impact(self) -> None:
+    def test_wrapper_uses_ui_fallback_and_allows_explicit_none(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             repo = Path(tmp)
             self.make_repo(repo)
@@ -58,15 +58,15 @@ class ReadinessIntegrationTests(unittest.TestCase):
             body.write_text("## What\n\nChange the button implementation.\n", encoding="utf-8")
             missing_evidence = run(["bash", str(SCRIPT), "main", str(body)], repo)
             self.assertEqual(1, missing_evidence.returncode, missing_evidence.stdout)
-            self.assertIn("Visual Evidence Audit (ui)", missing_evidence.stdout)
+            self.assertIn("Visual Evidence Lint (ui)", missing_evidence.stdout)
 
             body.write_text(
                 "## Screenshots\n\nNot applicable because there is no visual change; rendered pixels are identical.\n",
                 encoding="utf-8",
             )
-            accepted = run(["bash", str(SCRIPT), "main", str(body)], repo)
+            accepted = run(["bash", str(SCRIPT), "main", str(body), "none"], repo)
             self.assertEqual(0, accepted.returncode, accepted.stdout)
-            self.assertIn("no-visual-impact", accepted.stdout)
+            self.assertIn("No mechanical visual-evidence checks apply", accepted.stdout)
 
     def test_wrapper_allows_explicit_generated_kind_for_non_ui_source(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -77,7 +77,7 @@ class ReadinessIntegrationTests(unittest.TestCase):
 
             explicit = run(["bash", str(SCRIPT), "main", str(body), "generated"], repo)
             self.assertEqual(1, explicit.returncode, explicit.stdout)
-            self.assertIn("Visual Evidence Audit (generated)", explicit.stdout)
+            self.assertIn("Visual Evidence Lint (generated)", explicit.stdout)
 
             invalid = run(["bash", str(SCRIPT), "main", str(body), "maybe"], repo)
             self.assertEqual(2, invalid.returncode, invalid.stdout)
@@ -113,6 +113,21 @@ class ReadinessIntegrationTests(unittest.TestCase):
             self.assertEqual(0, run(["git", "-c", "commit.gpgsign=false", "commit", "-m", "remove secret"], repo).returncode)
             completed = run(["bash", str(SCRIPT), "main"], repo)
             self.assertEqual(0, completed.returncode, completed.stdout)
+
+    def test_debug_warning_does_not_echo_source_text(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            self.make_repo(repo, "worker.py")
+            marker = "do-not-print-this-debug-value"
+            (repo / "worker.py").write_text(f'print("{marker}")\n', encoding="utf-8")
+            self.assertEqual(0, run(["git", "add", "worker.py"], repo).returncode)
+            self.assertEqual(
+                0,
+                run(["git", "-c", "commit.gpgsign=false", "commit", "-m", "add debug"], repo).returncode,
+            )
+            completed = run(["bash", str(SCRIPT), "main"], repo)
+            self.assertIn("Possible debug statements added", completed.stdout)
+            self.assertNotIn(marker, completed.stdout)
 
 
 if __name__ == "__main__":

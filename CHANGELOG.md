@@ -6,10 +6,10 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Dependency-free `check-visual-evidence.py` audit for PR Markdown, with
-  proportionate ordinary-UI/generated-output policies, immutable GitHub URL
-  checks, honest no-baseline handling, accessibility/reviewer cues, malformed
-  image detection, contact-sheet guidance, JSON output, and strict mode
+- Small dependency-free `check-visual-evidence.py` mechanical lint for PR
+  Markdown: section/media presence, alt/link text, immutable repository
+  URLs, generated base/head labels, malformed-image detection, JSON output,
+  and strict mode. Semantic proof quality remains review guidance in the skill
 - Corpus-derived visual-evidence reference based on 629 authored PRs across 51
   repositories, including durable examples and observed GitHub attachment
   failure modes
@@ -41,19 +41,17 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- Visual evidence audits now ignore commented/fenced placeholders, recognize
-  GitHub recording attachments, bind causal comparisons to sufficient media,
-  require an explicitly labelled baseline commit, and distinguish application
-  UI from generated rendered output
-- Readiness failures now return a non-zero exit status, while auto-detection can
-  use UI-file changes as a fallback without downgrading generated-output policy
+- Visual-evidence lint ignores commented, fenced, indented, and inline-code
+  placeholders; recognizes GitHub recording attachments and reference images;
+  and requires explicit generated-output classification
+- Readiness failures now return a non-zero exit status, UI-file changes can be
+  used as an `auto` fallback, and diagnostic matches are not echoed verbatim
 - Corpus analysis excludes non-rendered examples and counts relative repository
   image paths as mutable evidence
-- Visual audits now ignore unclosed comments and indented code, support
-  reference-style images, bind labelled proof fields to the visual section and
-  checked-out revisions, distinguish external URL provenance, and reject
-  contradictory no-impact claims
-- Readiness checks accept an explicit evidence kind, recognize generated/binary
+- Generated evidence labels are bound to the visual section and, through the
+  readiness wrapper, to the checked-out revisions; external generated URLs are
+  reported as provenance warnings
+- Readiness checks accept an explicit evidence kind, recognize binary-only
   changes, and keep lexical secret detection advisory and redacted
 - Eval negation guards no longer reject “no need” answers, code-formatted `alt`
   guidance is recognized, benchmark and ablation skill paths resolve from the

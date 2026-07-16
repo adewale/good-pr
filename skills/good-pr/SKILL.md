@@ -138,7 +138,7 @@ the repeated regression risk justifies maintaining it. See the compact proof
 contract in `references/visual-evidence.md`.
 
 After drafting a PR with visual impact, save the description to a Markdown file
-and run the installed checker. Resolve the script relative to this `SKILL.md`;
+and run the installed linter. Resolve the script relative to this `SKILL.md`;
 do not assume the target repository has copied it into its own `scripts/`
 directory:
 
@@ -148,11 +148,15 @@ python3 <good-pr-skill-dir>/scripts/check-visual-evidence.py --kind generated --
 ```
 
 Use `ui` for ordinary application screenshots and `generated` for renderers,
-charts, PDFs, image pipelines, or other programmatic output. The checker fails
-missing causal/provenance requirements, warns about accessibility and evidence
-volume, warns when no associated oracle or limitation is named, ignores non-
-rendered Markdown examples, and never downloads or judges the pixels. See
-`references/visual-evidence.md` for the corpus-derived rationale and examples.
+charts, PDFs, image pipelines, or other programmatic output. The linter checks
+only mechanical properties: section/media presence, malformed Markdown,
+alt/link-text presence, immutable repository URLs, and labelled base/head SHAs.
+It ignores non-rendered Markdown examples and never decides
+whether claims, fixtures, receipts, tests, limitations, or pixels are valid.
+Apply the proof contract above as reviewer judgment. Prefer the readiness
+wrapper for generated evidence because it supplies the actual merge-base and
+HEAD; direct mode checks only SHA shape. See `references/visual-evidence.md` for
+the corpus-derived rationale and examples.
 
 ### 3. Code That Fits
 
@@ -337,9 +341,10 @@ When a user asks for help with a PR:
    you revert the fix?" If they haven't checked, tell them to check
 6. **Visual changes?** — classify the change as ordinary UI, generated output,
    or genuinely no visible impact. For a drafted body, run
-   `scripts/check-visual-evidence.py` with the matching `--kind`; address errors
-   and report any proportional warnings. For generated output, require an
-   named claim/input, immutable base and head, SHA-pinned URLs, review cues, a
+   `scripts/check-visual-evidence.py` with the matching `--kind`; address its
+   mechanical findings, then review the semantic contract yourself. For
+   generated output, require a named claim/input, immutable base and head,
+   SHA-pinned URLs, review cues, a
    regeneration command or receipt, accessible alt text, an existing
    independent oracle when machine-checkable, and an explicit limitation
 7. **Be honest** — it's better to tell someone their PR needs work before they
