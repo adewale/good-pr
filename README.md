@@ -61,9 +61,12 @@ skills/good-pr/
 ├── SKILL.md                      # Main skill instructions
 ├── references/
 │   ├── pr-template.md            # Fill-in PR description template
-│   └── review-checklist.md       # Self-review checklist before submitting
+│   ├── pr-example.md             # Filled-in PR description example
+│   ├── review-checklist.md       # Self-review checklist before submitting
+│   └── visual-evidence.md        # Screenshot policy, pitfalls, and examples
 └── scripts/
-    └── check-pr-readiness.sh     # Automated PR hygiene checks
+    ├── check-pr-readiness.sh     # Automated PR hygiene checks
+    └── check-visual-evidence.py  # PR Markdown evidence/provenance audit
 ```
 
 ## Usage
@@ -79,6 +82,22 @@ You can also run the readiness check script directly:
 
 ```bash
 bash skills/good-pr/scripts/check-pr-readiness.sh main
+```
+
+Pass a drafted PR body as the second argument to include the visual-evidence
+audit when UI files changed:
+
+```bash
+bash skills/good-pr/scripts/check-pr-readiness.sh main /tmp/pr-body.md
+```
+
+Or run the evidence audit directly. `ui` accepts proportionate hand-taken
+screenshots; `generated` additionally enforces immutable provenance and a
+regeneration command:
+
+```bash
+python3 skills/good-pr/scripts/check-visual-evidence.py --kind ui /tmp/pr-body.md
+python3 skills/good-pr/scripts/check-visual-evidence.py --kind generated /tmp/pr-body.md
 ```
 
 ## Credits

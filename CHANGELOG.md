@@ -6,6 +6,19 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Dependency-free `check-visual-evidence.py` audit for PR Markdown, with
+  proportionate ordinary-UI/generated-output policies, immutable GitHub URL
+  checks, honest no-baseline handling, accessibility/reviewer cues, malformed
+  image detection, contact-sheet guidance, JSON output, and strict mode
+- Corpus-derived visual-evidence reference based on 626 authored PRs across 52
+  repositories, including durable examples and observed GitHub attachment
+  failure modes
+- Re-runnable `analyze_pr_visual_evidence.py` GitHub corpus scanner used to
+  reproduce the aggregate evidence metrics and exemplar ranking
+- Five visual-evidence benchmark cases covering durable generated artifacts,
+  honest missing baselines, no-visible-impact restraint, malformed Markdown,
+  and independent correctness oracles
+
 - Visual evidence provenance guidance (inspired by beautiful-mermaid PR #22):
   caption each before/after pair with the specific defect it demonstrates,
   prefer generated artifacts rendered from base commit vs. branch when the

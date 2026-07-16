@@ -40,10 +40,13 @@ story. -->
 ## Screenshots / Recordings
 
 <!-- Required for any visual changes. Delete this section entirely if the PR
-has no UI impact. Caption each before/after pair with the specific defect it
-demonstrates, so the reviewer knows what to look at. If the project renders
-output programmatically, generate the "before" from the base commit and the
-"after" from your branch, and include the command to regenerate them. -->
+has no visible impact; if UI files changed without changing pixels, briefly say
+why screenshots are not applicable. Caption each before/after pair with the
+specific defect it demonstrates, so the reviewer knows what to look at. If the
+project renders output programmatically, generate the "before" from an immutable
+base commit and the "after" from your branch, use full-SHA artifact URLs, and
+include the command to regenerate them. Do not fabricate a before image for a
+new/previously unsupported surface; preserve that error baseline honestly. -->
 
 **Before:**
 
@@ -55,6 +58,11 @@ output programmatically, generate the "before" from the base commit and the
 
 <!-- For generated artifacts: note how to reproduce them, e.g.
 "Regenerate with `npm run render-examples` (before: <base sha>, after: this branch)" -->
+
+<!-- For generated artifacts, prefer:
+| Before | After | Why | What to inspect |
+Use descriptive alt text, a contact sheet for large matrices, and name the
+independent test/metric/freshness gate that supports the screenshot claim. -->
 
 ## Risk
 

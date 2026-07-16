@@ -4,11 +4,13 @@
 # Quick automated checks for common PR issues.
 # Run from the root of the repo you're contributing to.
 #
-# Usage: bash check-pr-readiness.sh [base-branch]
+# Usage: bash check-pr-readiness.sh [base-branch] [pr-body-file]
 
 set -euo pipefail
 
 BASE="${1:-main}"
+PR_BODY_FILE="${2:-}"
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 PASS="✓"
 WARN="⚠"
 FAIL="✗"
@@ -28,7 +30,7 @@ else
 fi
 
 # Check 2: Test files modified
-TEST_FILES=$(git diff "$BASE"...HEAD --name-only | grep -iE '(test|spec|_test\.|\.test\.)' | wc -l | tr -d ' ')
+TEST_FILES=$(git diff "$BASE"...HEAD --name-only | grep -icE '(test|spec|_test\.|\.test\.)' || true)
 if [ "$TEST_FILES" -gt 0 ]; then
     echo "$PASS  Test files modified: $TEST_FILES"
 else
@@ -58,11 +60,33 @@ else
 fi
 
 # Check 6: UI files changed (screenshots needed?)
-UI_FILES=$(git diff "$BASE"...HEAD --name-only | grep -iE '\.(jsx|tsx|vue|svelte|css|scss|html|erb)$' | wc -l | tr -d ' ')
+UI_FILES=$(git diff "$BASE"...HEAD --name-only | grep -icE '\.(jsx|tsx|vue|svelte|css|scss|html|erb)$' || true)
 if [ "$UI_FILES" -gt 0 ]; then
-    echo "$WARN  $UI_FILES UI-related files changed — include captioned before/after screenshots in your PR"
+    echo "$WARN  $UI_FILES UI-related files changed — include captioned before/after screenshots, or explain why pixels do not change"
 else
     echo "$PASS  No UI files changed"
+fi
+
+# Check 7: Audit drafted visual evidence when a PR body is supplied
+if [ -n "$PR_BODY_FILE" ]; then
+    if [ ! -f "$PR_BODY_FILE" ]; then
+        echo "$FAIL  PR body file does not exist: $PR_BODY_FILE"
+    elif ! command -v python3 >/dev/null 2>&1; then
+        echo "$WARN  python3 is unavailable; skipped visual-evidence audit"
+    else
+        EVIDENCE_KIND="auto"
+        if [ "$UI_FILES" -gt 0 ]; then
+            EVIDENCE_KIND="ui"
+        fi
+        echo ""
+        if python3 "$SCRIPT_DIR/check-visual-evidence.py" --kind "$EVIDENCE_KIND" "$PR_BODY_FILE"; then
+            echo "$PASS  Visual-evidence audit completed"
+        else
+            echo "$FAIL  Visual-evidence audit found blocking issues"
+        fi
+    fi
+elif [ "$UI_FILES" -gt 0 ]; then
+    echo "$WARN  Pass a PR body file as argument 2 to audit its visual evidence"
 fi
 
 echo ""

@@ -27,6 +27,17 @@ and check it off or note why it doesn't apply.
 - [ ] **Evidence is reproducible** — if the project renders output
       programmatically, images are generated from base commit vs. your branch
       and the regeneration command is noted
+- [ ] **URLs are immutable** — generated repository assets use full commit-SHA
+      URLs rather than branches or relative paths
+- [ ] **Review cue included** — captions say why the pixels changed and exactly
+      what the reviewer should inspect
+- [ ] **Alt text is descriptive** — every Markdown or HTML image describes the
+      visible claim
+- [ ] **Evidence is proportional** — large matrices use a contact sheet plus
+      links; new/unsupported surfaces preserve the honest error baseline rather
+      than fabricating a before image
+- [ ] **Independent oracle named** — machine-checkable visual claims also have
+      a test, metric, control, or freshness gate
 - [ ] **Multiple states shown** — empty, loading, error, populated
 - [ ] **Responsive checked** — different viewport sizes if relevant
 
