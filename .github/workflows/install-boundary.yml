@@ -17,8 +17,10 @@ jobs:
           python-version: '3.x'
       - name: Check installable skill boundary
         run: python3 scripts/check_install_boundary.py
-      - name: Check shell syntax
-        run: bash -n skills/good-pr/scripts/check-pr-readiness.sh
+      - name: Check Python syntax
+        env:
+          PYTHONPYCACHEPREFIX: /tmp/good-pr-pycache
+        run: python3 -m py_compile skills/good-pr/scripts/*.py
       - name: Run regression tests
         env:
           PYTHONDONTWRITEBYTECODE: '1'
