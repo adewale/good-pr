@@ -9,7 +9,7 @@ This repo participates in the shared Skill Eval Harness:
 Install the harness from GitHub with [uv](https://docs.astral.sh/uv/):
 
 ```sh
-uv tool install git+https://github.com/adewale/skill-eval-harness.git@96013a50e0139a4886f0fe1cfa932ac5834ce02a
+uv tool install git+https://github.com/adewale/skill-eval-harness.git@efe8eba1b20d41e02b81b11015e247b72438cc04
 ```
 
 Splits:
@@ -98,7 +98,7 @@ python3 scripts/build_eval_evidence.py build \
   --evaluated-sha <committed-source-sha> \
   --baseline-sha 8e613beba912411217ae89b82fadb081a4380bb5 \
   --baseline-snapshot evals/baselines/good-pr-8e613be \
-  --harness-sha 96013a50e0139a4886f0fe1cfa932ac5834ce02a
+  --harness-sha efe8eba1b20d41e02b81b11015e247b72438cc04
 python3 scripts/build_eval_evidence.py verify \
   evals/results/visual-evidence-gpt-5.4.json
 ```
@@ -106,11 +106,12 @@ python3 scripts/build_eval_evidence.py verify \
 Treat visible tune-case statistics as descriptive, not as holdout or
 confirmatory significance claims.
 
-The recorded final run used the single sequential `run-codex` command above:
-all 81 task identities produced complete Harness commit markers and no cleanup
-failure occurred. Parallel runs on the same pinned Harness revision can hit the
-temporary Codex-home cleanup race tracked in
-[Skill Eval Harness #45](https://github.com/adewale/skill-eval-harness/issues/45);
-[PR #46](https://github.com/adewale/skill-eval-harness/pull/46) is the proposed
-runner fix. Keeping this frozen comparison sequential isolates the skill change
-from that runner defect.
+Two sequential replication attempts on pre-fix Harness commit `96013a5`
+reproduced the temporary Codex-home cleanup race tracked in
+[Skill Eval Harness #45](https://github.com/adewale/skill-eval-harness/issues/45),
+aborting after 12 and 29 complete task identities. Those partial runs were
+discarded. The recorded final run started from an empty run directory on merged
+[PR #46](https://github.com/adewale/skill-eval-harness/pull/46) commit
+`efe8eba`; all 81 identities produced complete artifact commits without a
+worker abort. The run remained sequential so the only protocol change from the
+earlier comparison was the cleanup-race fix.
