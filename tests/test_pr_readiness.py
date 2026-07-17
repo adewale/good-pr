@@ -1,13 +1,18 @@
 from __future__ import annotations
 
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "skills/good-pr/scripts/check-pr-readiness.sh"
+SCRIPT = ROOT / "skills/good-pr/scripts/check-pr-readiness.py"
+
+
+def readiness(*args: str) -> list[str]:
+    return [sys.executable, str(SCRIPT), *args]
 
 
 def run(command: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
@@ -38,13 +43,13 @@ class ReadinessIntegrationTests(unittest.TestCase):
             repo = Path(tmp)
             self.make_repo(repo)
 
-            missing = run(["bash", str(SCRIPT), "main", str(repo / "missing.md")], repo)
+            missing = run(readiness("main", str(repo / "missing.md")), repo)
             self.assertEqual(1, missing.returncode, missing.stdout)
             self.assertIn("PR body file does not exist", missing.stdout)
 
             body = repo / "body.md"
             body.write_text("## What\n\nFix renderer clipping in generated charts.\n", encoding="utf-8")
-            failed = run(["bash", str(SCRIPT), "main", str(body)], repo)
+            failed = run(readiness("main", str(body)), repo)
             self.assertEqual(1, failed.returncode, failed.stdout)
             self.assertIn("Visual Evidence Lint (ui)", failed.stdout)
             self.assertIn("Visual-evidence lint found blocking issues", failed.stdout)
@@ -56,7 +61,7 @@ class ReadinessIntegrationTests(unittest.TestCase):
             body = repo / "body.md"
 
             body.write_text("## What\n\nChange the button implementation.\n", encoding="utf-8")
-            missing_evidence = run(["bash", str(SCRIPT), "main", str(body)], repo)
+            missing_evidence = run(readiness("main", str(body)), repo)
             self.assertEqual(1, missing_evidence.returncode, missing_evidence.stdout)
             self.assertIn("Visual Evidence Lint (ui)", missing_evidence.stdout)
 
@@ -64,7 +69,7 @@ class ReadinessIntegrationTests(unittest.TestCase):
                 "## Screenshots\n\nNot applicable because there is no visual change; rendered pixels are identical.\n",
                 encoding="utf-8",
             )
-            accepted = run(["bash", str(SCRIPT), "main", str(body), "none"], repo)
+            accepted = run(readiness("main", str(body), "none"), repo)
             self.assertEqual(0, accepted.returncode, accepted.stdout)
             self.assertIn("No mechanical visual-evidence checks apply", accepted.stdout)
 
@@ -75,11 +80,11 @@ class ReadinessIntegrationTests(unittest.TestCase):
             body = repo / "body.md"
             body.write_text("## What\n\nFix clipping in Mermaid SVG labels.\n", encoding="utf-8")
 
-            explicit = run(["bash", str(SCRIPT), "main", str(body), "generated"], repo)
+            explicit = run(readiness("main", str(body), "generated"), repo)
             self.assertEqual(1, explicit.returncode, explicit.stdout)
             self.assertIn("Visual Evidence Lint (generated)", explicit.stdout)
 
-            invalid = run(["bash", str(SCRIPT), "main", str(body), "maybe"], repo)
+            invalid = run(readiness("main", str(body), "maybe"), repo)
             self.assertEqual(2, invalid.returncode, invalid.stdout)
             self.assertIn("evidence kind must be", invalid.stderr)
 
@@ -94,7 +99,7 @@ class ReadinessIntegrationTests(unittest.TestCase):
                 0,
                 run(["git", "-c", "commit.gpgsign=false", "commit", "-m", "add proof"], repo).returncode,
             )
-            completed = run(["bash", str(SCRIPT), "main"], repo)
+            completed = run(readiness("main"), repo)
             self.assertNotIn("No changes detected", completed.stdout)
 
     def test_removed_secret_like_text_is_not_a_blocking_failure(self) -> None:
@@ -111,7 +116,7 @@ class ReadinessIntegrationTests(unittest.TestCase):
             config.write_text("password is loaded from the environment\n", encoding="utf-8")
             self.assertEqual(0, run(["git", "add", "config.txt"], repo).returncode)
             self.assertEqual(0, run(["git", "-c", "commit.gpgsign=false", "commit", "-m", "remove secret"], repo).returncode)
-            completed = run(["bash", str(SCRIPT), "main"], repo)
+            completed = run(readiness("main"), repo)
             self.assertEqual(0, completed.returncode, completed.stdout)
 
     def test_debug_warning_does_not_echo_source_text(self) -> None:
@@ -125,7 +130,7 @@ class ReadinessIntegrationTests(unittest.TestCase):
                 0,
                 run(["git", "-c", "commit.gpgsign=false", "commit", "-m", "add debug"], repo).returncode,
             )
-            completed = run(["bash", str(SCRIPT), "main"], repo)
+            completed = run(readiness("main"), repo)
             self.assertIn("Possible debug statements added", completed.stdout)
             self.assertNotIn(marker, completed.stdout)
 

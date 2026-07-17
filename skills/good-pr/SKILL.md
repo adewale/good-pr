@@ -43,7 +43,7 @@ What does the user need help with?
 ├─ Visual change or screenshot  -> references/visual-evidence.md
 │  evidence review                 scripts/check-visual-evidence.py
 ├─ Self-reviewing before submit -> references/review-checklist.md
-├─ Automated readiness check    -> scripts/check-pr-readiness.sh
+├─ Automated readiness check    -> scripts/check-pr-readiness.py
 ├─ Understanding what makes
 │  a good PR                    -> The Checklist (below)
 └─ Common mistakes to avoid     -> Anti-Patterns (below)

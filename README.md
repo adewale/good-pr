@@ -65,7 +65,7 @@ skills/good-pr/
 │   ├── review-checklist.md       # Self-review checklist before submitting
 │   └── visual-evidence.md        # Screenshot policy, pitfalls, and examples
 └── scripts/
-    ├── check-pr-readiness.sh     # Automated PR hygiene checks
+    ├── check-pr-readiness.py     # Automated PR hygiene checks
     └── check-visual-evidence.py  # Mechanical PR Markdown lint
 ```
 
@@ -85,7 +85,7 @@ Once installed, the skill activates when you ask your coding agent for help with
 You can also run the readiness check script directly:
 
 ```bash
-bash skills/good-pr/scripts/check-pr-readiness.sh main
+python3 skills/good-pr/scripts/check-pr-readiness.py main
 ```
 
 Pass a drafted PR body as the second argument. Use the optional third argument
@@ -93,9 +93,9 @@ to choose `generated` when programmatic output changes, or `none` after you have
 documented why the change has no visible impact:
 
 ```bash
-bash skills/good-pr/scripts/check-pr-readiness.sh main /tmp/pr-body.md
-bash skills/good-pr/scripts/check-pr-readiness.sh main /tmp/pr-body.md generated
-bash skills/good-pr/scripts/check-pr-readiness.sh main /tmp/pr-body.md none
+python3 skills/good-pr/scripts/check-pr-readiness.py main /tmp/pr-body.md
+python3 skills/good-pr/scripts/check-pr-readiness.py main /tmp/pr-body.md generated
+python3 skills/good-pr/scripts/check-pr-readiness.py main /tmp/pr-body.md none
 ```
 
 Or run the evidence lint directly. It checks only mechanical properties such as
