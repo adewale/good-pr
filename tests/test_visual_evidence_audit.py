@@ -89,6 +89,17 @@ https://github.com/user-attachments/assets/22222222-2222-2222-2222-222222222222
         self.assertEqual("pass", result["status"])
         self.assertFalse(result["findings"])
 
+    def test_auto_detects_media_outside_visual_section(self) -> None:
+        body = """## What changed
+
+![After](https://github.com/user-attachments/assets/11111111-1111-1111-1111-111111111111)
+"""
+        result = MODULE.audit(body, "auto")
+        self.assertEqual("ui", result["kind"])
+        self.assertEqual("fail", result["status"])
+        self.assertIn("visual-section", self.codes(result, "error"))
+        self.assertIn("visual-assets", self.codes(result, "error"))
+
     def test_comments_code_and_inline_examples_do_not_count(self) -> None:
         hidden = f"![Hidden](https://raw.githubusercontent.com/acme/charts/{HEAD_SHA}/hidden.png)"
         bodies = (
@@ -143,6 +154,18 @@ Current SHA: `{HEAD_SHA}`
         result = MODULE.audit(body, "generated")
         self.assertIn("external-url-provenance", self.codes(result, "warning"))
         self.assertIn("generated-upload-provenance", self.codes(result, "warning"))
+
+    def test_unsupported_url_schemes_are_blocking(self) -> None:
+        body = f"""## Visual evidence
+
+Baseline SHA: `{BASE_SHA}`
+Current SHA: `{HEAD_SHA}`
+![Local file](file:///tmp/chart.png)
+![Inline data](data:image/png;base64,AAAA)
+"""
+        result = MODULE.audit(body, "generated")
+        self.assertEqual("fail", result["status"])
+        self.assertIn("unsupported-url-scheme", self.codes(result, "error"))
 
     def test_cli_json_and_strict_warning_exit(self) -> None:
         body = """## Screenshots

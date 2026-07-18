@@ -82,10 +82,13 @@ skill-benchmark benchmark evals/visual-evidence-benchmark.json \
   --out /tmp/good-pr-visual-evidence-report.json
 ```
 
-The committed summary records the exact evaluated source commit and Git skill
-tree. The adjacent run CSV binds every score to an output and artifact-marker
-hash; `visual-evidence-gpt-5.4-outputs.jsonl` preserves the sanitized model text
-and per-assertion decisions without provider events, traces, or stderr.
+The committed summary records a post-run annotation for the intended source
+commit and Git skill tree, and verifies that the installed tree did not change
+before the bundle was built. Harness v0.6.0 does not stamp the executed task with
+a skill-tree hash, so this is not an execution attestation. The adjacent run CSV
+binds every score to an output and artifact-marker hash;
+`visual-evidence-gpt-5.4-outputs.jsonl` preserves the sanitized model text and
+per-assertion decisions without provider events, traces, or stderr.
 
 Build and verify the proof bundle after running and grading a clean committed
 source revision:
@@ -95,7 +98,7 @@ python3 scripts/build_eval_evidence.py build \
   --manifest evals/visual-evidence-benchmark.json \
   --runs eval-runs/visual-evidence-gpt-5.4 \
   --report /tmp/good-pr-visual-evidence-report.json \
-  --evaluated-sha <committed-source-sha> \
+  --source-sha <committed-source-sha> \
   --baseline-sha 8e613beba912411217ae89b82fadb081a4380bb5 \
   --baseline-snapshot evals/baselines/good-pr-8e613be \
   --harness-sha efe8eba1b20d41e02b81b11015e247b72438cc04
@@ -103,8 +106,9 @@ python3 scripts/build_eval_evidence.py verify \
   evals/results/visual-evidence-gpt-5.4.json
 ```
 
-Treat visible tune-case statistics as descriptive, not as holdout or
-confirmatory significance claims.
+Treat visible tune-case statistics as descriptive effect sizes, not as holdout
+or confirmatory significance claims. The proof builder deliberately omits
+inferential p-values for these tuned cases.
 
 Two sequential replication attempts on pre-fix Harness commit `96013a5`
 reproduced the temporary Codex-home cleanup race tracked in

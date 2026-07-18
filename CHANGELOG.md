@@ -10,6 +10,11 @@ All notable changes to this project will be documented in this file.
   Markdown: section/media presence, alt/link text, immutable repository
   URLs, generated base/head labels, malformed-image detection, JSON output,
   and strict mode. Semantic proof quality remains review guidance in the skill
+- Audit hardening for misplaced-media detection, unsupported evidence URL
+  schemes, branch-divergence commit counts, complete eval artifact validation,
+  deterministic assertion regrading, canonical aggregate verification, and
+  honest post-run source annotation. Visible tune-case results no longer report
+  inferential significance
 - Corpus-derived visual-evidence reference based on 629 authored PRs across 51
   repositories, including durable examples and observed GitHub attachment
   failure modes
@@ -24,8 +29,9 @@ All notable changes to this project will be documented in this file.
 - Reproducible nine-case, three-arm visual-evidence comparison with a committed
   baseline skill snapshot, model-pinned manifest, compact result, provenance
   hashes, sanitized row-level outputs, and exact rerun commands
-- Sanitized output/per-assertion eval proof bundle, source/tree binding, and a
-  CI verifier for the manifest, run matrix, outputs, and frozen baseline
+- Sanitized output/per-assertion eval proof bundle, post-run source/tree
+  annotation, and a CI verifier for the manifest, run matrix, outputs, and
+  frozen baseline
 - Compact generated-output proof contract covering a named claim and input,
   immutable base/head, reproduction or receipt, associated existing oracle,
   material limitation, and proportional reuse of production fixtures

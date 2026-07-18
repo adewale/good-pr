@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import hashlib
 import importlib.util
+import json
 import sys
 import tempfile
 import unittest
@@ -50,7 +52,7 @@ class EvalEvidenceTests(unittest.TestCase):
             MODULE.hash_tree(snapshot),
         )
 
-    def test_variant_comparison_reports_regressions_and_exact_sign_flip(self) -> None:
+    def test_variant_comparison_reports_effects_without_tune_case_inference(self) -> None:
         aggregate = {
             "candidate": {
                 "objective_pass_rate": 0.75,
@@ -64,17 +66,61 @@ class EvalEvidenceTests(unittest.TestCase):
         comparison = MODULE.compare_variants(aggregate, "candidate", "reference")
         self.assertEqual(0.25, comparison["absolute_delta"])
         self.assertEqual([], comparison["negative_delta_cases"])
-        self.assertEqual(1.0, comparison["significance"]["p_value"])
+        self.assertNotIn("significance", comparison)
+
+    def test_assertion_decisions_are_regraded_from_output(self) -> None:
+        case = {
+            "id": "example",
+            "assertions": [
+                {"name": "contains", "type": "contains_any", "values": ["full SHA"]},
+                {"name": "matches", "type": "regex", "pattern": "(?i)limitation"},
+                {"name": "avoids", "type": "not_regex", "pattern": "(?i)invent a metric"},
+                {"name": "human", "type": "judge", "rubric": ["clarity"]},
+            ],
+        }
+        output = "Use a full SHA. Limitation: this checks one fixture."
+        graded = MODULE.grade_assertions(case, output)
+        self.assertEqual([True, True, True], [item["passed"] for item in graded])
+        result = {"assertions": graded, "objective_passed": 3, "objective_total": 3}
+        MODULE.validate_assertion_result(case, output, result)
+        result["objective_passed"] = 2
+        with self.assertRaisesRegex(SystemExit, "objective pass count mismatch"):
+            MODULE.validate_assertion_result(case, output, result)
+
+    def test_artifact_commit_validates_every_inventory_hash(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            run_dir = Path(tmp)
+            output = run_dir / "output.md"
+            metadata = run_dir / "metadata.json"
+            output.write_text("answer\n", encoding="utf-8")
+            metadata.write_text("{}\n", encoding="utf-8")
+            commit = {
+                "required_files": ["output.md", "metadata.json"],
+                "inventory_sha256": {
+                    "output.md": hashlib.sha256(output.read_bytes()).hexdigest(),
+                    "metadata.json": "0" * 64,
+                },
+            }
+            with self.assertRaisesRegex(SystemExit, "artifact inventory mismatch"):
+                MODULE.validate_artifact_commit(run_dir, commit)
 
     def test_focused_cases_match_shared_manifest(self) -> None:
-        import json
-
         focused = json.loads((ROOT / "evals/visual-evidence-benchmark.json").read_text())
         shared = json.loads((ROOT / "evals/shared-benchmark.json").read_text())
         shared_by_id = {case["id"]: case for case in shared["cases"]}
         self.assertEqual(9, len(focused["cases"]))
         for case in focused["cases"]:
             self.assertEqual(case, shared_by_id[case["id"]])
+
+    def test_committed_outputs_match_deterministic_assertion_oracles(self) -> None:
+        manifest = json.loads((ROOT / "evals/visual-evidence-benchmark.json").read_text())
+        cases = {case["id"]: case for case in manifest["cases"]}
+        outputs = ROOT / "evals/results/visual-evidence-gpt-5.4-outputs.jsonl"
+        for line in outputs.read_text(encoding="utf-8").splitlines():
+            record = json.loads(line)
+            MODULE.validate_assertion_result(
+                cases[record["case_id"]], record["output"], record
+            )
 
 
 if __name__ == "__main__":

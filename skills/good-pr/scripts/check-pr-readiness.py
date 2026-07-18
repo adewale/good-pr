@@ -95,7 +95,7 @@ def check_readiness(args: argparse.Namespace) -> int:
         print(f"{WARN}  No test files modified. Does this change need tests?")
 
     try:
-        commit_count = git("rev-list", "--count", comparison).strip()
+        commit_count = git("rev-list", "--count", f"{args.base}..HEAD").strip()
     except RuntimeError:
         commit_count = "0"
     print(f"{PASS}  Commits: {commit_count}")

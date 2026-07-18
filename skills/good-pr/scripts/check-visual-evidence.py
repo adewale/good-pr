@@ -255,9 +255,11 @@ def audit(
     block_sections = visual_sections(block_body)
     evidence = "\n\n".join(rendered_sections)
     diagnostic_evidence = "\n\n".join(block_sections)
-    media = extract_media(evidence, reference_definitions(rendered_body))
+    definitions = reference_definitions(rendered_body)
+    media = extract_media(evidence, definitions)
+    all_media = extract_media(rendered_body, definitions)
     kind = (
-        ("ui" if rendered_sections or media else fallback_kind)
+        ("ui" if rendered_sections or all_media else fallback_kind)
         if requested_kind == "auto"
         else requested_kind
     )
@@ -273,6 +275,8 @@ def audit(
             add("error", "visual-section", "Add a dedicated Visual evidence or Screenshots section.")
         if media:
             add("pass", "visual-assets", f"Found {len(media)} embedded visual asset(s).")
+        elif all_media:
+            add("error", "visual-assets", "Move embedded visual assets into the dedicated visual-evidence section.")
         else:
             add("error", "visual-assets", "Embed at least one screenshot, recording, or rendered artifact.")
 
@@ -290,9 +294,14 @@ def audit(
     external_generated = 0
     uploaded_generated = 0
     repository_hosted = 0
+    unsupported_schemes = 0
     for item in media:
-        hosted, ref = github_ref(item.url)
         parsed = urlparse(item.url)
+        scheme = parsed.scheme.casefold()
+        if scheme not in {"", "http", "https"}:
+            unsupported_schemes += 1
+            continue
+        hosted, ref = github_ref(item.url)
         if hosted:
             repository_hosted += 1
             if ref is None or not FULL_SHA_RE.fullmatch(ref):
@@ -301,8 +310,14 @@ def audit(
             "github.com", "user-images.githubusercontent.com", "private-user-images.githubusercontent.com"
         }:
             uploaded_generated += 1
-        elif kind == "generated" and parsed.scheme in {"http", "https"}:
+        elif kind == "generated" and (scheme in {"http", "https"} or parsed.netloc):
             external_generated += 1
+    if unsupported_schemes:
+        add(
+            "error",
+            "unsupported-url-scheme",
+            f"{unsupported_schemes} asset(s) use URL schemes that GitHub cannot review as embedded evidence.",
+        )
     if repository_hosted and not unpinned:
         add("pass", "immutable-urls", "Repository-hosted URLs use full commit SHAs.")
     elif unpinned:

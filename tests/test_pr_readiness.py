@@ -102,6 +102,27 @@ class ReadinessIntegrationTests(unittest.TestCase):
             completed = run(readiness("main"), repo)
             self.assertNotIn("No changes detected", completed.stdout)
 
+    def test_commit_count_excludes_commits_only_on_base(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            self.make_repo(repo, "feature.py")
+            self.assertEqual(0, run(["git", "checkout", "main"], repo).returncode)
+            for index in range(2):
+                (repo / "README.md").write_text(f"baseline {index}\n", encoding="utf-8")
+                self.assertEqual(0, run(["git", "add", "README.md"], repo).returncode)
+                self.assertEqual(
+                    0,
+                    run(
+                        ["git", "-c", "commit.gpgsign=false", "commit", "-m", f"base {index}"],
+                        repo,
+                    ).returncode,
+                )
+            self.assertEqual(0, run(["git", "checkout", "feature"], repo).returncode)
+
+            completed = run(readiness("main"), repo)
+            self.assertEqual(0, completed.returncode, completed.stdout)
+            self.assertIn("Commits: 1", completed.stdout)
+
     def test_removed_secret_like_text_is_not_a_blocking_failure(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             repo = Path(tmp)

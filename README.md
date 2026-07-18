@@ -71,7 +71,8 @@ skills/good-pr/
 
 Repository-only evidence lives outside the installable skill: `evidence/`
 contains the dated PR-corpus receipt, while `evals/results/` contains the
-source-bound model-eval proof bundle and sanitized outputs.
+post-run source-annotated model-eval proof bundle and sanitized outputs. The
+current Harness metadata does not attest the skill-tree bytes used at execution.
 
 ## Usage
 
@@ -108,8 +109,11 @@ binds those labels to the checked-out merge-base and HEAD.
 
 ```bash
 python3 skills/good-pr/scripts/check-visual-evidence.py --kind ui /tmp/pr-body.md
-python3 skills/good-pr/scripts/check-visual-evidence.py --kind generated --strict /tmp/pr-body.md
+python3 skills/good-pr/scripts/check-visual-evidence.py --kind generated /tmp/pr-body.md
 ```
+
+Warnings remain advisory by default. Add `--strict` only when the target
+repository explicitly treats every mechanical warning as blocking.
 
 ## Credits
 

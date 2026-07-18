@@ -150,7 +150,7 @@ Run:
 
 ```bash
 python3 <good-pr-skill-dir>/scripts/check-visual-evidence.py --kind ui pr-body.md
-python3 <good-pr-skill-dir>/scripts/check-visual-evidence.py --kind generated --strict pr-body.md
+python3 <good-pr-skill-dir>/scripts/check-visual-evidence.py --kind generated pr-body.md
 ```
 
 The linter validates mechanical properties only: section/media presence,
@@ -160,4 +160,6 @@ explicit third argument (`ui`, `generated`, or `none`) and supplies the actual
 merge-base/head SHAs. Direct generated mode checks only that SHA-like labels are
 present. The linter does not fetch assets or decide whether the claim, input,
 reproduction path, independent check, limitation, or pixels are valid. Review
-those semantic parts with the compact proof contract above.
+those semantic parts with the compact proof contract above. Review warnings in
+context; reserve `--strict` for repositories whose policy explicitly makes every
+mechanical warning blocking.
