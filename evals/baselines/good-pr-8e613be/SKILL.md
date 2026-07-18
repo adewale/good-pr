@@ -12,6 +12,7 @@ description: >
   or when they want a pre-submission sanity check. Even if the user doesn't
   explicitly mention "PR" — if they're packaging a code change for someone else
   to review, this skill applies.
+compatibility: Agent Skills clients including Codex, OpenCode, Pi, Gemini CLI, and Claude Code.
 ---
 
 # Good PR
@@ -40,8 +41,6 @@ What does the user need help with?
 ```
 ├─ Writing a PR description     -> references/pr-template.md (blank template)
 │                                  references/pr-example.md (filled-in example)
-├─ Visual change or screenshot  -> references/visual-evidence.md
-│  evidence review                 scripts/check-visual-evidence.py
 ├─ Self-reviewing before submit -> references/review-checklist.md
 ├─ Automated readiness check    -> scripts/check-pr-readiness.sh
 ├─ Understanding what makes
@@ -80,10 +79,9 @@ If you can't reproduce the bug reliably, you can't prove your fix works.
 
 ### 2. Visual Evidence
 
-Any PR with visible UI or rendered-output impact must include reviewable visual
-evidence. A changed UI file is only a signal: if the pixels genuinely do not
-change, say why instead of manufacturing screenshots. Asking maintainers to
-pull your branch and click around is asking them to do your job.
+Any PR that touches UI must include before/after screenshots or recordings.
+Asking maintainers to pull your branch and click around is asking them to do
+your job.
 
 - **Screenshots** for static changes (layout, styling, text)
 - **Screen recordings or GIFs** for interactive or animated changes
@@ -100,63 +98,13 @@ Make the evidence trustworthy, not just present:
   a claim, not make the reviewer play spot-the-difference
 - **Prefer generated artifacts over hand-taken screenshots** when the project
   renders output programmatically (diagramming, charting, PDF/image pipelines):
-  render the same named input and configuration at the immutable base and head
-  commits. State the visible claim before the images
-- **Include a labelled regeneration command or generated receipt** so a
-  skeptical reviewer can rebuild the evidence or verify input/output hashes
-- **Pin repository-hosted generated images to full commit SHAs**, not branch
-  names or relative paths; otherwise a later force-push or branch deletion can
-  rewrite the PR's historical evidence
-- **Tell the reviewer what to inspect** and, when the causal explanation is not
-  obvious, why the pixels changed. A compact `Before | After | Why | What to
-  inspect` table works well
-- **Use descriptive alt text** for every image. HTML `<img>` is useful for width
-  control, but it makes forgetting `alt` especially easy
-- **Caption recording attachments** with a descriptive Markdown link or nearby
-  explanation; GitHub commonly represents uploaded videos as bare
-  `user-attachments` URLs rather than image syntax
-- **Use a contact sheet for large matrices** rather than embedding dozens of
-  full-size images; link the exhaustive artifacts separately
-- **Pair screenshots with an independent oracle** when the claim is machine-
-  checkable (geometry assertion, metric, regression test, or freshness gate).
-  Link the existing check to the claim; do not invent a misleading metric for a
-  subjective judgment
-- **State the material limitation**: name the fixture, viewport, browser, font
-  stack, state, or quality dimension the visual does not establish
-
-Do not fabricate a before image for a genuinely new or previously unsupported
-surface. Show the failure/unsupported baseline honestly, explain why no image
-exists, and provide after evidence.
+  render the "before" from the base commit and the "after" from your branch, so
+  there's no doubt the evidence matches the code in the PR
+- **Include the regeneration command** (e.g. `npm run render-examples`) so a
+  skeptical reviewer can rebuild the evidence instead of trusting attachments
 
 For ordinary UI work a hand-taken screenshot is fine — don't build a render
 pipeline just to fix a button color.
-
-Keep generated proof proportional too. Reuse the production renderer, checked-
-in fixtures, and existing tests or metrics. Do not duplicate rendering logic,
-introduce a parallel domain model, or create a proof-only approval system unless
-the repeated regression risk justifies maintaining it. See the compact proof
-contract in `references/visual-evidence.md`.
-
-After drafting a PR with visual impact, save the description to a Markdown file
-and run the installed linter. Resolve the script relative to this `SKILL.md`;
-do not assume the target repository has copied it into its own `scripts/`
-directory:
-
-```bash
-python3 <good-pr-skill-dir>/scripts/check-visual-evidence.py --kind ui /tmp/pr-body.md
-python3 <good-pr-skill-dir>/scripts/check-visual-evidence.py --kind generated --strict /tmp/pr-body.md
-```
-
-Use `ui` for ordinary application screenshots and `generated` for renderers,
-charts, PDFs, image pipelines, or other programmatic output. The linter checks
-only mechanical properties: section/media presence, malformed Markdown,
-alt/link-text presence, immutable repository URLs, and labelled base/head SHAs.
-It ignores non-rendered Markdown examples and never decides
-whether claims, fixtures, receipts, tests, limitations, or pixels are valid.
-Apply the proof contract above as reviewer judgment. Prefer the readiness
-wrapper for generated evidence because it supplies the actual merge-base and
-HEAD; direct mode checks only SHA shape. See `references/visual-evidence.md` for
-the corpus-derived rationale and examples.
 
 ### 3. Code That Fits
 
@@ -339,14 +287,9 @@ When a user asks for help with a PR:
    starting point and fill it in together
 5. **Probe the tests** — if they have tests, ask: "does this test fail when
    you revert the fix?" If they haven't checked, tell them to check
-6. **Visual changes?** — classify the change as ordinary UI, generated output,
-   or genuinely no visible impact. For a drafted body, run
-   `scripts/check-visual-evidence.py` with the matching `--kind`; address its
-   mechanical findings, then review the semantic contract yourself. For
-   generated output, require a named claim/input, immutable base and head,
-   SHA-pinned URLs, review cues, a
-   regeneration command or receipt, accessible alt text, an existing
-   independent oracle when machine-checkable, and an explicit limitation
+6. **Visual changes?** — remind them about before/after evidence; if the
+   project renders output programmatically, suggest generated artifacts with
+   captions and a regeneration command
 7. **Be honest** — it's better to tell someone their PR needs work before they
    submit it than to let them waste a maintainer's time and damage their
    reputation in the project

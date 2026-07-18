@@ -1,0 +1,162 @@
+{
+  "execution_integrity": {
+    "complete_artifact_sets": 81,
+    "execution_errors": 0,
+    "missing_outputs": 0,
+    "model_metadata_matches": 81,
+    "no_skill_invocations": 0,
+    "no_skill_runs": 27
+  },
+  "final_frozen_run": {
+    "old_skill": {
+      "all_runs_pass_rate": 0.2222222222,
+      "case_objective_pass_rate": {
+        "neg-new-surface-no-fake-before": 0.8333333333,
+        "neg-ordinary-ui-no-artifact-demand": 1.0,
+        "neg-subjective-generated-proof-no-overbuild": 0.25,
+        "neg-ui-file-no-visible-impact": 0.5,
+        "pos-generated-evidence-durability-audit": 0.5833333333,
+        "pos-generated-proof-contract-end-to-end": 0.5,
+        "pos-malformed-visual-markdown": 0.3333333333,
+        "pos-renderer-evidence-provenance": 1.0,
+        "pos-visual-claim-needs-independent-oracle": 0.6666666667
+      },
+      "command_count_sum": 43,
+      "mean_pass_at_1": 0.3333333333,
+      "median_elapsed_ms": 20851,
+      "median_total_tokens": 22737,
+      "objective_pass_rate": 0.6296296296
+    },
+    "with_skill": {
+      "all_runs_pass_rate": 0.5555555556,
+      "case_objective_pass_rate": {
+        "neg-new-surface-no-fake-before": 1.0,
+        "neg-ordinary-ui-no-artifact-demand": 1.0,
+        "neg-subjective-generated-proof-no-overbuild": 0.6666666667,
+        "neg-ui-file-no-visible-impact": 0.6666666667,
+        "pos-generated-evidence-durability-audit": 0.9166666667,
+        "pos-generated-proof-contract-end-to-end": 0.8888888889,
+        "pos-malformed-visual-markdown": 1.0,
+        "pos-renderer-evidence-provenance": 1.0,
+        "pos-visual-claim-needs-independent-oracle": 1.0
+      },
+      "command_count_sum": 62,
+      "mean_pass_at_1": 0.7037037037,
+      "median_elapsed_ms": 25823,
+      "median_total_tokens": 37766,
+      "objective_pass_rate": 0.9043209877
+    },
+    "without_skill": {
+      "all_runs_pass_rate": 0.0,
+      "case_objective_pass_rate": {
+        "neg-new-surface-no-fake-before": 0.5,
+        "neg-ordinary-ui-no-artifact-demand": 0.8333333333,
+        "neg-subjective-generated-proof-no-overbuild": 0.5,
+        "neg-ui-file-no-visible-impact": 0.5,
+        "pos-generated-evidence-durability-audit": 0.75,
+        "pos-generated-proof-contract-end-to-end": 0.3333333333,
+        "pos-malformed-visual-markdown": 0.3333333333,
+        "pos-renderer-evidence-provenance": 0.1111111111,
+        "pos-visual-claim-needs-independent-oracle": 0.8333333333
+      },
+      "command_count_sum": 0,
+      "mean_pass_at_1": 0.1481481481,
+      "median_elapsed_ms": 11986,
+      "median_total_tokens": 10192,
+      "objective_pass_rate": 0.5216049383
+    }
+  },
+  "generated_at": "2026-07-16T20:50:26Z",
+  "interpretation": "Visible tune cases only; statistics are descriptive, not hidden-holdout confirmation.",
+  "limitations": [
+    "All cases are visible tune cases and no qualitative judges were completed.",
+    "Harness v0.6.0 metadata does not stamp manifest or skill-tree identity; this bundle binds outputs to a clean committed source revision and verifies the final skill tree is unchanged.",
+    "Sanitized outputs omit provider events, traces, stderr, and other metadata; the committed assertion decisions and output text are the review surface.",
+    "Model execution is nondeterministic; rerunning verifies the protocol, not byte-for-byte output recreation."
+  ],
+  "protocol": {
+    "cases": 9,
+    "manifest": "evals/visual-evidence-benchmark.json",
+    "model": "gpt-5.4",
+    "objective_assertions_only": true,
+    "qualitative_judges_completed": false,
+    "reasoning_effort": "low",
+    "runs_per_variant": 3,
+    "split": "tune",
+    "total_runs": 81,
+    "variants": [
+      "with_skill",
+      "old_skill",
+      "without_skill"
+    ]
+  },
+  "revisions": {
+    "baseline_git_sha": "8e613beba912411217ae89b82fadb081a4380bb5",
+    "baseline_skill_content_sha256": "3b0bf31a8ff07ed165e892748d4fa21615c684493d93103f016fe077ca9aa799",
+    "baseline_skill_git_tree": "a7a121449475c84853bd330417a5326934c16c03",
+    "baseline_snapshot": "evals/baselines/good-pr-8e613be",
+    "baseline_snapshot_content_sha256": "3b0bf31a8ff07ed165e892748d4fa21615c684493d93103f016fe077ca9aa799",
+    "canonical_tree_hash_format": "sha256 over sorted '<mode> <relative-path>\\0<bytes>\\0' records",
+    "evaluated_good_pr_git_sha": "7aa61546036da9dd8ebc53b162ecc1177d80246a",
+    "evaluated_skill_content_sha256": "7f115c608d44477fdc36c7669ab9ad4b92d04d69c456744b6f942569fadf48c9",
+    "evaluated_skill_git_tree": "f769e61be8409c19849c13a48b7f4ad13452643b",
+    "harness_git_sha": "96013a50e0139a4886f0fe1cfa932ac5834ce02a",
+    "harness_version": "0.6.0",
+    "manifest_sha256": "4bb94fe857bd12f8bc315356acac40bef943aa00707d399d3d9155fef0e89151",
+    "run_matrix": "evals/results/visual-evidence-gpt-5.4-runs.csv",
+    "run_matrix_sha256": "809b34818bc7b250c168d0154dc0f9ee25164984368e2d88e773f284ef2dcd73",
+    "sanitized_outputs": "evals/results/visual-evidence-gpt-5.4-outputs.jsonl",
+    "sanitized_outputs_sha256": "492a6fc47e8031d044218ecf56c22ad79e741f4e2214cffd57a94e82eb783948"
+  },
+  "runner_issue": "https://github.com/adewale/skill-eval-harness/issues/45",
+  "schema_version": 2,
+  "status": "exploratory_visible_tune_cases",
+  "with_skill_vs_old_skill": {
+    "absolute_delta": 0.2746913581,
+    "candidate": "with_skill",
+    "case_objective_pass_rate_delta": {
+      "neg-new-surface-no-fake-before": 0.1666666667,
+      "neg-ordinary-ui-no-artifact-demand": 0.0,
+      "neg-subjective-generated-proof-no-overbuild": 0.4166666667,
+      "neg-ui-file-no-visible-impact": 0.1666666667,
+      "pos-generated-evidence-durability-audit": 0.3333333334,
+      "pos-generated-proof-contract-end-to-end": 0.3888888889,
+      "pos-malformed-visual-markdown": 0.6666666667,
+      "pos-renderer-evidence-provenance": 0.0,
+      "pos-visual-claim-needs-independent-oracle": 0.3333333333
+    },
+    "negative_delta_cases": [],
+    "reference": "old_skill",
+    "significance": {
+      "method": "case-mean-sign-flip-exact",
+      "n": 9,
+      "observed_mean_delta": 0.274691358,
+      "p_value": 0.015625,
+      "significant_at_0_05": true
+    }
+  },
+  "with_skill_vs_without_skill": {
+    "absolute_delta": 0.3827160494,
+    "candidate": "with_skill",
+    "case_objective_pass_rate_delta": {
+      "neg-new-surface-no-fake-before": 0.5,
+      "neg-ordinary-ui-no-artifact-demand": 0.1666666667,
+      "neg-subjective-generated-proof-no-overbuild": 0.1666666667,
+      "neg-ui-file-no-visible-impact": 0.1666666667,
+      "pos-generated-evidence-durability-audit": 0.1666666667,
+      "pos-generated-proof-contract-end-to-end": 0.5555555556,
+      "pos-malformed-visual-markdown": 0.6666666667,
+      "pos-renderer-evidence-provenance": 0.8888888889,
+      "pos-visual-claim-needs-independent-oracle": 0.1666666667
+    },
+    "negative_delta_cases": [],
+    "reference": "without_skill",
+    "significance": {
+      "method": "case-mean-sign-flip-exact",
+      "n": 9,
+      "observed_mean_delta": 0.3827160494,
+      "p_value": 0.00390625,
+      "significant_at_0_05": true
+    }
+  }
+}

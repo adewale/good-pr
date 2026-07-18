@@ -61,10 +61,17 @@ skills/good-pr/
 ├── SKILL.md                      # Main skill instructions
 ├── references/
 │   ├── pr-template.md            # Fill-in PR description template
-│   └── review-checklist.md       # Self-review checklist before submitting
+│   ├── pr-example.md             # Filled-in PR description example
+│   ├── review-checklist.md       # Self-review checklist before submitting
+│   └── visual-evidence.md        # Screenshot policy, pitfalls, and examples
 └── scripts/
-    └── check-pr-readiness.sh     # Automated PR hygiene checks
+    ├── check-pr-readiness.sh     # Automated PR hygiene checks
+    └── check-visual-evidence.py  # Mechanical PR Markdown lint
 ```
+
+Repository-only evidence lives outside the installable skill: `evidence/`
+contains the dated PR-corpus receipt, while `evals/results/` contains the
+source-bound model-eval proof bundle and sanitized outputs.
 
 ## Usage
 
@@ -79,6 +86,29 @@ You can also run the readiness check script directly:
 
 ```bash
 bash skills/good-pr/scripts/check-pr-readiness.sh main
+```
+
+Pass a drafted PR body as the second argument. Use the optional third argument
+to choose `generated` when programmatic output changes, or `none` after you have
+documented why the change has no visible impact:
+
+```bash
+bash skills/good-pr/scripts/check-pr-readiness.sh main /tmp/pr-body.md
+bash skills/good-pr/scripts/check-pr-readiness.sh main /tmp/pr-body.md generated
+bash skills/good-pr/scripts/check-pr-readiness.sh main /tmp/pr-body.md none
+```
+
+Or run the evidence lint directly. It checks only mechanical properties such as
+section/media presence, Markdown mistakes, alt/link text, immutable
+repository URLs, and labelled base/head SHAs. The skill text—not this
+script—asks the agent and reviewer to judge the visible claim, same input,
+reproduction path, correctness check, limitation, and proportionality.
+Direct `generated` mode validates SHA shape; the readiness wrapper additionally
+binds those labels to the checked-out merge-base and HEAD.
+
+```bash
+python3 skills/good-pr/scripts/check-visual-evidence.py --kind ui /tmp/pr-body.md
+python3 skills/good-pr/scripts/check-visual-evidence.py --kind generated --strict /tmp/pr-body.md
 ```
 
 ## Credits
