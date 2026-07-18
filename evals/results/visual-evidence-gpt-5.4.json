@@ -1,6 +1,6 @@
 {
   "execution_integrity": {
-    "complete_artifact_sets": 81,
+    "artifact_sets_validated_during_build": 81,
     "execution_errors": 0,
     "missing_outputs": 0,
     "model_metadata_matches": 81,
@@ -12,70 +12,71 @@
       "all_runs_pass_rate": 0.1111111111,
       "case_objective_pass_rate": {
         "neg-new-surface-no-fake-before": 0.8333333333,
-        "neg-ordinary-ui-no-artifact-demand": 1.0,
-        "neg-subjective-generated-proof-no-overbuild": 0.25,
-        "neg-ui-file-no-visible-impact": 0.5,
-        "pos-generated-evidence-durability-audit": 0.5,
-        "pos-generated-proof-contract-end-to-end": 0.3888888889,
-        "pos-malformed-visual-markdown": 0.5555555556,
-        "pos-renderer-evidence-provenance": 0.8888888889,
-        "pos-visual-claim-needs-independent-oracle": 0.6666666667
+        "neg-ordinary-ui-no-artifact-demand": 0.8333333333,
+        "neg-subjective-generated-proof-no-overbuild": 0.3333333333,
+        "neg-ui-file-no-visible-impact": 0.6666666667,
+        "pos-generated-evidence-durability-audit": 0.5833333333,
+        "pos-generated-proof-contract-end-to-end": 0.4444444444,
+        "pos-malformed-visual-markdown": 0.6666666667,
+        "pos-renderer-evidence-provenance": 1.0,
+        "pos-visual-claim-needs-independent-oracle": 0.5
       },
-      "command_count_sum": 48,
+      "command_count_sum": 51,
       "mean_pass_at_1": 0.2962962963,
-      "median_elapsed_ms": 17675,
-      "median_total_tokens": 22589,
-      "objective_pass_rate": 0.6203703704
+      "median_elapsed_ms": 17533,
+      "median_total_tokens": 22647,
+      "objective_pass_rate": 0.6512345679
     },
     "with_skill": {
       "all_runs_pass_rate": 0.4444444444,
       "case_objective_pass_rate": {
         "neg-new-surface-no-fake-before": 1.0,
         "neg-ordinary-ui-no-artifact-demand": 1.0,
-        "neg-subjective-generated-proof-no-overbuild": 0.9166666667,
+        "neg-subjective-generated-proof-no-overbuild": 0.6666666667,
         "neg-ui-file-no-visible-impact": 0.6666666667,
-        "pos-generated-evidence-durability-audit": 0.9166666667,
+        "pos-generated-evidence-durability-audit": 0.8333333333,
         "pos-generated-proof-contract-end-to-end": 0.8333333333,
         "pos-malformed-visual-markdown": 1.0,
-        "pos-renderer-evidence-provenance": 0.8888888889,
+        "pos-renderer-evidence-provenance": 0.4444444444,
         "pos-visual-claim-needs-independent-oracle": 1.0
       },
       "command_count_sum": 62,
-      "mean_pass_at_1": 0.7407407407,
-      "median_elapsed_ms": 19290,
-      "median_total_tokens": 37506,
-      "objective_pass_rate": 0.9135802469
+      "mean_pass_at_1": 0.5555555556,
+      "median_elapsed_ms": 20950,
+      "median_total_tokens": 37515,
+      "objective_pass_rate": 0.8271604938
     },
     "without_skill": {
       "all_runs_pass_rate": 0.1111111111,
       "case_objective_pass_rate": {
-        "neg-new-surface-no-fake-before": 0.5,
+        "neg-new-surface-no-fake-before": 0.8333333333,
         "neg-ordinary-ui-no-artifact-demand": 1.0,
-        "neg-subjective-generated-proof-no-overbuild": 0.5,
+        "neg-subjective-generated-proof-no-overbuild": 0.4166666667,
         "neg-ui-file-no-visible-impact": 0.5,
-        "pos-generated-evidence-durability-audit": 0.5833333333,
-        "pos-generated-proof-contract-end-to-end": 0.3333333333,
-        "pos-malformed-visual-markdown": 0.5555555556,
+        "pos-generated-evidence-durability-audit": 0.6666666667,
+        "pos-generated-proof-contract-end-to-end": 0.3888888889,
+        "pos-malformed-visual-markdown": 0.4444444444,
         "pos-renderer-evidence-provenance": 0.1111111111,
-        "pos-visual-claim-needs-independent-oracle": 0.6666666667
+        "pos-visual-claim-needs-independent-oracle": 0.5
       },
       "command_count_sum": 0,
-      "mean_pass_at_1": 0.1481481481,
-      "median_elapsed_ms": 9950,
-      "median_total_tokens": 10019,
-      "objective_pass_rate": 0.5277777778
+      "mean_pass_at_1": 0.1851851852,
+      "median_elapsed_ms": 10529,
+      "median_total_tokens": 10044,
+      "objective_pass_rate": 0.5401234568
     }
   },
-  "generated_at": "2026-07-17T20:27:50Z",
+  "generated_at": "2026-07-18T20:51:15Z",
   "interpretation": "Visible tune cases only; statistics are descriptive, not hidden-holdout confirmation.",
   "limitations": [
     "All cases are visible tune cases and no qualitative judges were completed.",
-    "Harness v0.6.0 metadata does not stamp manifest or skill-tree identity; this bundle binds outputs to a clean committed source revision and verifies the final skill tree is unchanged.",
+    "Harness v0.6.0 metadata does not stamp manifest or skill-tree identity; source revisions in this bundle are post-run annotations, not execution attestations.",
     "Sanitized outputs omit provider events, traces, stderr, and other metadata; the committed assertion decisions and output text are the review surface.",
     "Model execution is nondeterministic; rerunning verifies the protocol, not byte-for-byte output recreation."
   ],
   "protocol": {
     "cases": 9,
+    "execution_source_attested": false,
     "manifest": "evals/visual-evidence-benchmark.json",
     "model": "gpt-5.4",
     "objective_assertions_only": true,
@@ -91,72 +92,60 @@
     ]
   },
   "revisions": {
+    "annotated_good_pr_git_sha": "7614095b51c3859050d899cfefde1544b52dd179",
+    "annotated_skill_content_sha256": "e51a3fe6b70dfa4b55056cfed51ba788330f82c26421dd1386d7989e9ab20281",
+    "annotated_skill_git_tree": "a59826660eb58f2527b80f38009b69d49ded3546",
     "baseline_git_sha": "8e613beba912411217ae89b82fadb081a4380bb5",
     "baseline_skill_content_sha256": "3b0bf31a8ff07ed165e892748d4fa21615c684493d93103f016fe077ca9aa799",
     "baseline_skill_git_tree": "a7a121449475c84853bd330417a5326934c16c03",
     "baseline_snapshot": "evals/baselines/good-pr-8e613be",
     "baseline_snapshot_content_sha256": "3b0bf31a8ff07ed165e892748d4fa21615c684493d93103f016fe077ca9aa799",
     "canonical_tree_hash_format": "sha256 over sorted '<mode> <relative-path>\\0<bytes>\\0' records",
-    "evaluated_good_pr_git_sha": "89293c13211c79d92ca2af80a75bc99ff830f02e",
-    "evaluated_skill_content_sha256": "753924770702cfc58ab244fa9b4aed5e10bbfc6f7f7677f8bc959d774e31d27b",
-    "evaluated_skill_git_tree": "c739f7f11205c639a37afc9633307edf422f7d3b",
     "harness_git_sha": "efe8eba1b20d41e02b81b11015e247b72438cc04",
     "harness_version": "0.6.0",
     "manifest_sha256": "4bb94fe857bd12f8bc315356acac40bef943aa00707d399d3d9155fef0e89151",
     "run_matrix": "evals/results/visual-evidence-gpt-5.4-runs.csv",
-    "run_matrix_sha256": "2b2e8d4d187af52cbff8a6e429be45c2fdd3fc7687b2fbbbdbd58c2ecff7457b",
+    "run_matrix_sha256": "e4c1dce64fcad47a99cc2aa112f3c762afbfb7fe04875ee326883486bc9a114e",
     "sanitized_outputs": "evals/results/visual-evidence-gpt-5.4-outputs.jsonl",
-    "sanitized_outputs_sha256": "ef1a756c54c25140e303cb9ddf5435e61d84a8740ff055a55a51f2b9e949fe16"
+    "sanitized_outputs_sha256": "d6a579c34591323160b2c48e91d7aa8bef4fa0b140fddc06215b96e68c486cd0"
   },
   "runner_issue": "https://github.com/adewale/skill-eval-harness/issues/45",
-  "schema_version": 2,
+  "schema_version": 3,
   "status": "exploratory_visible_tune_cases",
   "with_skill_vs_old_skill": {
-    "absolute_delta": 0.2932098765,
+    "absolute_delta": 0.1759259259,
+    "candidate": "with_skill",
+    "case_objective_pass_rate_delta": {
+      "neg-new-surface-no-fake-before": 0.1666666667,
+      "neg-ordinary-ui-no-artifact-demand": 0.1666666667,
+      "neg-subjective-generated-proof-no-overbuild": 0.3333333334,
+      "neg-ui-file-no-visible-impact": 0.0,
+      "pos-generated-evidence-durability-audit": 0.25,
+      "pos-generated-proof-contract-end-to-end": 0.3888888889,
+      "pos-malformed-visual-markdown": 0.3333333333,
+      "pos-renderer-evidence-provenance": -0.5555555556,
+      "pos-visual-claim-needs-independent-oracle": 0.5
+    },
+    "negative_delta_cases": [
+      "pos-renderer-evidence-provenance"
+    ],
+    "reference": "old_skill"
+  },
+  "with_skill_vs_without_skill": {
+    "absolute_delta": 0.287037037,
     "candidate": "with_skill",
     "case_objective_pass_rate_delta": {
       "neg-new-surface-no-fake-before": 0.1666666667,
       "neg-ordinary-ui-no-artifact-demand": 0.0,
-      "neg-subjective-generated-proof-no-overbuild": 0.6666666667,
+      "neg-subjective-generated-proof-no-overbuild": 0.25,
       "neg-ui-file-no-visible-impact": 0.1666666667,
-      "pos-generated-evidence-durability-audit": 0.4166666667,
+      "pos-generated-evidence-durability-audit": 0.1666666666,
       "pos-generated-proof-contract-end-to-end": 0.4444444444,
-      "pos-malformed-visual-markdown": 0.4444444444,
-      "pos-renderer-evidence-provenance": 0.0,
-      "pos-visual-claim-needs-independent-oracle": 0.3333333333
+      "pos-malformed-visual-markdown": 0.5555555556,
+      "pos-renderer-evidence-provenance": 0.3333333333,
+      "pos-visual-claim-needs-independent-oracle": 0.5
     },
     "negative_delta_cases": [],
-    "reference": "old_skill",
-    "significance": {
-      "method": "case-mean-sign-flip-exact",
-      "n": 9,
-      "observed_mean_delta": 0.2932098765,
-      "p_value": 0.015625,
-      "significant_at_0_05": true
-    }
-  },
-  "with_skill_vs_without_skill": {
-    "absolute_delta": 0.3858024691,
-    "candidate": "with_skill",
-    "case_objective_pass_rate_delta": {
-      "neg-new-surface-no-fake-before": 0.5,
-      "neg-ordinary-ui-no-artifact-demand": 0.0,
-      "neg-subjective-generated-proof-no-overbuild": 0.4166666667,
-      "neg-ui-file-no-visible-impact": 0.1666666667,
-      "pos-generated-evidence-durability-audit": 0.3333333334,
-      "pos-generated-proof-contract-end-to-end": 0.5,
-      "pos-malformed-visual-markdown": 0.4444444444,
-      "pos-renderer-evidence-provenance": 0.7777777778,
-      "pos-visual-claim-needs-independent-oracle": 0.3333333333
-    },
-    "negative_delta_cases": [],
-    "reference": "without_skill",
-    "significance": {
-      "method": "case-mean-sign-flip-exact",
-      "n": 9,
-      "observed_mean_delta": 0.3858024691,
-      "p_value": 0.0078125,
-      "significant_at_0_05": true
-    }
+    "reference": "without_skill"
   }
 }
