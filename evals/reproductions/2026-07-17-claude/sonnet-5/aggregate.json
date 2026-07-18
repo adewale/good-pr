@@ -1,0 +1,105 @@
+{
+  "aggregate": {
+    "old_skill": {
+      "all_runs_pass_rate": 0.2222222222,
+      "case_objective_pass_rate": {
+        "neg-new-surface-no-fake-before": 0.6666666667,
+        "neg-ordinary-ui-no-artifact-demand": 1.0,
+        "neg-subjective-generated-proof-no-overbuild": 0.6666666667,
+        "neg-ui-file-no-visible-impact": 0.5,
+        "pos-generated-evidence-durability-audit": 0.5,
+        "pos-generated-proof-contract-end-to-end": 0.3333333333,
+        "pos-malformed-visual-markdown": 0.1111111111,
+        "pos-renderer-evidence-provenance": 1.0,
+        "pos-visual-claim-needs-independent-oracle": 0.8333333333
+      },
+      "mean_pass_at_1": 0.3333333333,
+      "median_elapsed_ms": 32550,
+      "median_total_tokens": 1832,
+      "n_runs": 27,
+      "objective_pass_rate": 0.6234567901
+    },
+    "with_skill": {
+      "all_runs_pass_rate": 0.5555555556,
+      "case_objective_pass_rate": {
+        "neg-new-surface-no-fake-before": 1.0,
+        "neg-ordinary-ui-no-artifact-demand": 0.8333333333,
+        "neg-subjective-generated-proof-no-overbuild": 1.0,
+        "neg-ui-file-no-visible-impact": 0.5,
+        "pos-generated-evidence-durability-audit": 0.9166666667,
+        "pos-generated-proof-contract-end-to-end": 0.8333333333,
+        "pos-malformed-visual-markdown": 1.0,
+        "pos-renderer-evidence-provenance": 1.0,
+        "pos-visual-claim-needs-independent-oracle": 1.0
+      },
+      "mean_pass_at_1": 0.7037037037,
+      "median_elapsed_ms": 37461,
+      "median_total_tokens": 2042,
+      "n_runs": 27,
+      "objective_pass_rate": 0.8981481481
+    },
+    "without_skill": {
+      "all_runs_pass_rate": 0.0,
+      "case_objective_pass_rate": {
+        "neg-new-surface-no-fake-before": 0.5,
+        "neg-ordinary-ui-no-artifact-demand": 0.8333333333,
+        "neg-subjective-generated-proof-no-overbuild": 0.5833333333,
+        "neg-ui-file-no-visible-impact": 0.6666666667,
+        "pos-generated-evidence-durability-audit": 0.3333333333,
+        "pos-generated-proof-contract-end-to-end": 0.5555555556,
+        "pos-malformed-visual-markdown": 0.2222222222,
+        "pos-renderer-evidence-provenance": 0.1111111111,
+        "pos-visual-claim-needs-independent-oracle": 0.5
+      },
+      "mean_pass_at_1": 0.1111111111,
+      "median_elapsed_ms": 24575,
+      "median_total_tokens": 1519,
+      "n_runs": 27,
+      "objective_pass_rate": 0.4783950617
+    }
+  },
+  "with_skill_vs_old_skill": {
+    "absolute_delta": 0.274691358,
+    "candidate": "with_skill",
+    "case_delta": {
+      "neg-new-surface-no-fake-before": 0.3333333333,
+      "neg-ordinary-ui-no-artifact-demand": -0.1666666667,
+      "neg-subjective-generated-proof-no-overbuild": 0.3333333333,
+      "neg-ui-file-no-visible-impact": 0.0,
+      "pos-generated-evidence-durability-audit": 0.4166666667,
+      "pos-generated-proof-contract-end-to-end": 0.5,
+      "pos-malformed-visual-markdown": 0.8888888889,
+      "pos-renderer-evidence-provenance": 0.0,
+      "pos-visual-claim-needs-independent-oracle": 0.1666666667
+    },
+    "negative_delta_cases": [
+      "neg-ordinary-ui-no-artifact-demand"
+    ],
+    "observed_mean_delta": 0.274691358,
+    "p_value": 0.046875,
+    "reference": "old_skill",
+    "significant_at_0_05": true
+  },
+  "with_skill_vs_without_skill": {
+    "absolute_delta": 0.4197530864,
+    "candidate": "with_skill",
+    "case_delta": {
+      "neg-new-surface-no-fake-before": 0.5,
+      "neg-ordinary-ui-no-artifact-demand": 0.0,
+      "neg-subjective-generated-proof-no-overbuild": 0.4166666667,
+      "neg-ui-file-no-visible-impact": -0.1666666667,
+      "pos-generated-evidence-durability-audit": 0.5833333334,
+      "pos-generated-proof-contract-end-to-end": 0.2777777777,
+      "pos-malformed-visual-markdown": 0.7777777778,
+      "pos-renderer-evidence-provenance": 0.8888888889,
+      "pos-visual-claim-needs-independent-oracle": 0.5
+    },
+    "negative_delta_cases": [
+      "neg-ui-file-no-visible-impact"
+    ],
+    "observed_mean_delta": 0.4197530864,
+    "p_value": 0.015625,
+    "reference": "without_skill",
+    "significant_at_0_05": true
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "aggregate": {
+    "old_skill": {
+      "all_runs_pass_rate": 0.2222222222,
+      "case_objective_pass_rate": {
+        "neg-new-surface-no-fake-before": 0.5,
+        "neg-ordinary-ui-no-artifact-demand": 1.0,
+        "neg-subjective-generated-proof-no-overbuild": 0.5,
+        "neg-ui-file-no-visible-impact": 0.6666666667,
+        "pos-generated-evidence-durability-audit": 0.5,
+        "pos-generated-proof-contract-end-to-end": 0.3888888889,
+        "pos-malformed-visual-markdown": 0.3333333333,
+        "pos-renderer-evidence-provenance": 1.0,
+        "pos-visual-claim-needs-independent-oracle": 0.8333333333
+      },
+      "mean_pass_at_1": 0.3333333333,
+      "median_elapsed_ms": 34458,
+      "median_total_tokens": 1719,
+      "n_runs": 27,
+      "objective_pass_rate": 0.6358024691
+    },
+    "with_skill": {
+      "all_runs_pass_rate": 0.5555555556,
+      "case_objective_pass_rate": {
+        "neg-new-surface-no-fake-before": 1.0,
+        "neg-ordinary-ui-no-artifact-demand": 0.6666666667,
+        "neg-subjective-generated-proof-no-overbuild": 0.9166666667,
+        "neg-ui-file-no-visible-impact": 0.6666666667,
+        "pos-generated-evidence-durability-audit": 1.0,
+        "pos-generated-proof-contract-end-to-end": 0.7222222222,
+        "pos-malformed-visual-markdown": 1.0,
+        "pos-renderer-evidence-provenance": 1.0,
+        "pos-visual-claim-needs-independent-oracle": 1.0
+      },
+      "mean_pass_at_1": 0.7407407407,
+      "median_elapsed_ms": 35749,
+      "median_total_tokens": 1915,
+      "n_runs": 27,
+      "objective_pass_rate": 0.8858024691
+    },
+    "without_skill": {
+      "all_runs_pass_rate": 0.0,
+      "case_objective_pass_rate": {
+        "neg-new-surface-no-fake-before": 0.5,
+        "neg-ordinary-ui-no-artifact-demand": 0.6666666667,
+        "neg-subjective-generated-proof-no-overbuild": 0.5,
+        "neg-ui-file-no-visible-impact": 0.5,
+        "pos-generated-evidence-durability-audit": 0.5,
+        "pos-generated-proof-contract-end-to-end": 0.3888888889,
+        "pos-malformed-visual-markdown": 0.2222222222,
+        "pos-renderer-evidence-provenance": 0.2222222222,
+        "pos-visual-claim-needs-independent-oracle": 0.5
+      },
+      "mean_pass_at_1": 0.037037037,
+      "median_elapsed_ms": 23993,
+      "median_total_tokens": 1484,
+      "n_runs": 27,
+      "objective_pass_rate": 0.4444444444
+    }
+  },
+  "with_skill_vs_old_skill": {
+    "absolute_delta": 0.25,
+    "candidate": "with_skill",
+    "case_delta": {
+      "neg-new-surface-no-fake-before": 0.5,
+      "neg-ordinary-ui-no-artifact-demand": -0.3333333333,
+      "neg-subjective-generated-proof-no-overbuild": 0.4166666667,
+      "neg-ui-file-no-visible-impact": 0.0,
+      "pos-generated-evidence-durability-audit": 0.5,
+      "pos-generated-proof-contract-end-to-end": 0.3333333333,
+      "pos-malformed-visual-markdown": 0.6666666667,
+      "pos-renderer-evidence-provenance": 0.0,
+      "pos-visual-claim-needs-independent-oracle": 0.1666666667
+    },
+    "negative_delta_cases": [
+      "neg-ordinary-ui-no-artifact-demand"
+    ],
+    "observed_mean_delta": 0.25,
+    "p_value": 0.0625,
+    "reference": "old_skill",
+    "significant_at_0_05": false
+  },
+  "with_skill_vs_without_skill": {
+    "absolute_delta": 0.4413580247,
+    "candidate": "with_skill",
+    "case_delta": {
+      "neg-new-surface-no-fake-before": 0.5,
+      "neg-ordinary-ui-no-artifact-demand": 0.0,
+      "neg-subjective-generated-proof-no-overbuild": 0.4166666667,
+      "neg-ui-file-no-visible-impact": 0.1666666667,
+      "pos-generated-evidence-durability-audit": 0.5,
+      "pos-generated-proof-contract-end-to-end": 0.3333333333,
+      "pos-malformed-visual-markdown": 0.7777777778,
+      "pos-renderer-evidence-provenance": 0.7777777778,
+      "pos-visual-claim-needs-independent-oracle": 0.5
+    },
+    "negative_delta_cases": [],
+    "observed_mean_delta": 0.4413580247,
+    "p_value": 0.0078125,
+    "reference": "without_skill",
+    "significant_at_0_05": true
+  }
+}
