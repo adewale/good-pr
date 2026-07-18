@@ -40,14 +40,10 @@ story. -->
 ## Screenshots / Recordings
 
 <!-- Required for any visual changes. Delete this section entirely if the PR
-has no visible impact; if UI files changed without changing pixels, briefly say
-why screenshots are not applicable. Caption each before/after pair with the
-specific defect it demonstrates, so the reviewer knows what to look at. If the
-project renders output programmatically, generate the "before" from an immutable
-base commit and the "after" from the immutable head using the same named input,
-use full-SHA artifact URLs, and include a regeneration command or hash receipt.
-Do not fabricate a before image for a
-new/previously unsupported surface; preserve that error baseline honestly. -->
+has no UI impact. Caption each before/after pair with the specific defect it
+demonstrates, so the reviewer knows what to look at. If the project renders
+output programmatically, generate the "before" from the base commit and the
+"after" from your branch, and include the command to regenerate them. -->
 
 **Before:**
 
@@ -57,19 +53,8 @@ new/previously unsupported surface; preserve that error baseline honestly. -->
 
 <!-- screenshot or recording -->
 
-<!-- For generated artifacts, replace the generic Before/After block above with:
-Claim: <one visible outcome>
-Input/fixture: <same named input and config at both revisions>
-Baseline SHA: <immutable base SHA>
-Current SHA: <immutable head SHA>
-Regenerate: `npm run render-examples`
-Independent check: <existing linked test, metric, invariant, or why none is proportionate>
-Limitation: <what the image/check cannot prove> -->
-
-<!-- For generated artifacts, prefer:
-| Before | After | Why | What to inspect |
-Use descriptive alt text, a contact sheet for large matrices, and name the
-independent test/metric/freshness gate that supports the screenshot claim. -->
+<!-- For generated artifacts: note how to reproduce them, e.g.
+"Regenerate with `npm run render-examples` (before: <base sha>, after: this branch)" -->
 
 ## Risk
 

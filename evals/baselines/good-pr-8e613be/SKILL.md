@@ -12,6 +12,7 @@ description: >
   or when they want a pre-submission sanity check. Even if the user doesn't
   explicitly mention "PR" — if they're packaging a code change for someone else
   to review, this skill applies.
+compatibility: Agent Skills clients including Codex, OpenCode, Pi, Gemini CLI, and Claude Code.
 ---
 
 # Good PR
@@ -40,10 +41,8 @@ What does the user need help with?
 ```
 ├─ Writing a PR description     -> references/pr-template.md (blank template)
 │                                  references/pr-example.md (filled-in example)
-├─ Visual change or screenshot  -> references/visual-evidence.md
-│  evidence review                 scripts/check-visual-evidence.py
 ├─ Self-reviewing before submit -> references/review-checklist.md
-├─ Automated readiness check    -> scripts/check-pr-readiness.py
+├─ Automated readiness check    -> scripts/check-pr-readiness.sh
 ├─ Understanding what makes
 │  a good PR                    -> The Checklist (below)
 └─ Common mistakes to avoid     -> Anti-Patterns (below)
@@ -80,52 +79,32 @@ If you can't reproduce the bug reliably, you can't prove your fix works.
 
 ### 2. Visual Evidence
 
-Any PR with visible UI or rendered-output impact must include reviewable visual
-evidence. A changed UI file is only a signal: if the pixels genuinely do not
-change, say why instead of manufacturing screenshots. Asking maintainers to
-pull your branch and click around is asking them to do your job.
+Any PR that touches UI must include before/after screenshots or recordings.
+Asking maintainers to pull your branch and click around is asking them to do
+your job.
 
-- **Ordinary UI:** a hand-taken, captioned screenshot is sufficient for a static
-  change; use a recording for interaction or animation. Cover only the states
-  and viewports needed for the review decision, and do not demand generated
-  artifacts or a render pipeline for a trivial UI change.
-- **Programmatically generated output:** read
-  `references/visual-evidence.md` before drafting or reviewing the evidence.
-  Prefer artifacts from the production renderer to hand-captured demo output.
-  Apply the compact contract: one visible claim; the same named input at
-  immutable base/head revisions; focused, captioned before/after output with
-  full-SHA URLs, descriptive alt text, and a reviewer cue; a contact sheet for
-  large matrices; a reproduction command or receipt; an existing independent
-  check when machine-verifiable; and an explicit limitation.
-- **New or previously unsupported output:** preserve the honest error or
-  unsupported baseline; never fabricate a before image.
-- **No visible impact:** state briefly why pixels do not change and provide the
-  non-visual evidence that applies.
+- **Screenshots** for static changes (layout, styling, text)
+- **Screen recordings or GIFs** for interactive or animated changes
+- Multiple viewport sizes if the change is responsive
+- Cover relevant states: empty, loading, error, populated
 
-Keep proof proportional. Reuse the production renderer, checked-in fixtures,
-and existing tests or metrics; avoid parallel rendering logic or proof-only
-approval infrastructure unless recurring risk justifies its maintenance.
+This is the single easiest thing to include and the most common thing people
+skip. It takes 30 seconds and saves the reviewer minutes of context-building.
 
-After drafting a PR with visual impact, save the description to a Markdown file
-and run the installed linter. Resolve the script relative to this `SKILL.md`;
-do not assume the target repository has copied it into its own `scripts/`
-directory:
+Make the evidence trustworthy, not just present:
 
-```bash
-python3 <good-pr-skill-dir>/scripts/check-visual-evidence.py --kind ui /tmp/pr-body.md
-python3 <good-pr-skill-dir>/scripts/check-visual-evidence.py --kind generated /tmp/pr-body.md
-```
+- **Caption each before/after pair** with the specific defect it demonstrates
+  ("label no longer overlaps the container border") — the image should confirm
+  a claim, not make the reviewer play spot-the-difference
+- **Prefer generated artifacts over hand-taken screenshots** when the project
+  renders output programmatically (diagramming, charting, PDF/image pipelines):
+  render the "before" from the base commit and the "after" from your branch, so
+  there's no doubt the evidence matches the code in the PR
+- **Include the regeneration command** (e.g. `npm run render-examples`) so a
+  skeptical reviewer can rebuild the evidence instead of trusting attachments
 
-Use `ui` for ordinary application screenshots and `generated` for renderers,
-charts, PDFs, image pipelines, or other programmatic output. The linter checks
-only mechanical properties: section/media presence, malformed Markdown,
-alt/link-text presence, immutable repository URLs, and labelled base/head SHAs.
-It ignores non-rendered Markdown examples and never decides whether claims,
-fixtures, receipts, tests, limitations, or pixels are valid. Review warnings in
-context; use `--strict` only when the target project explicitly treats every
-mechanical warning as blocking. Prefer the readiness wrapper for generated
-evidence because it supplies the actual merge-base and HEAD; direct mode checks
-only SHA shape.
+For ordinary UI work a hand-taken screenshot is fine — don't build a render
+pipeline just to fix a button color.
 
 ### 3. Code That Fits
 
@@ -308,11 +287,9 @@ When a user asks for help with a PR:
    starting point and fill it in together
 5. **Probe the tests** — if they have tests, ask: "does this test fail when
    you revert the fix?" If they haven't checked, tell them to check
-6. **Visual changes?** — classify the change as ordinary UI, generated output,
-   a new/unsupported surface, or genuinely no visible impact. Read
-   `references/visual-evidence.md`, run `scripts/check-visual-evidence.py` with
-   the matching `--kind`, then apply the semantic and proportionality guidance
-   that the mechanical linter cannot judge
+6. **Visual changes?** — remind them about before/after evidence; if the
+   project renders output programmatically, suggest generated artifacts with
+   captions and a regeneration command
 7. **Be honest** — it's better to tell someone their PR needs work before they
    submit it than to let them waste a maintainer's time and damage their
    reputation in the project
