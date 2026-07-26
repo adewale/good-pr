@@ -6,7 +6,6 @@ import sys
 import unittest
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts/analyze_pr_visual_evidence.py"
 SPEC = importlib.util.spec_from_file_location("pr_visual_corpus", SCRIPT)

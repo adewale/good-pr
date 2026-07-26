@@ -12,7 +12,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
-
 FIELDS = "number,title,url,repository,body,createdAt,updatedAt,state"
 MARKDOWN_IMAGE_RE = re.compile(r"!\[([^\]]*)\]\(([^)\s]+)(?:\s+[^)]*)?\)")
 REFERENCE_IMAGE_RE = re.compile(r"!\[([^\]]*)\]\[([^\]]+)\]")
@@ -72,7 +71,7 @@ def strip_nonrendered_markdown(text: str, *, strip_inline: bool = True) -> str:
                     fence_length = 0
             output.append("\n" if line.endswith("\n") else "")
             continue
-        if line.startswith("    ") or line.startswith("\t"):
+        if line.startswith(("    ", "\t")):
             output.append("\n" if line.endswith("\n") else "")
         else:
             output.append(line)

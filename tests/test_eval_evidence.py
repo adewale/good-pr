@@ -8,7 +8,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts/build_eval_evidence.py"
 SPEC = importlib.util.spec_from_file_location("build_eval_evidence", SCRIPT)
