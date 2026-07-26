@@ -13,7 +13,6 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 VARIANTS = ("with_skill", "old_skill", "without_skill")
 
