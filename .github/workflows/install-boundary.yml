@@ -21,9 +21,15 @@ jobs:
         env:
           PYTHONPYCACHEPREFIX: /tmp/good-pr-pycache
         run: python3 -m py_compile skills/good-pr/scripts/*.py
+      - uses: astral-sh/setup-uv@v9.0.0
       - name: Run regression tests
         env:
           PYTHONDONTWRITEBYTECODE: '1'
         run: python3 -m unittest discover -s tests -v
+      - name: Run model-free harness gate (pinned skill-eval-harness 0.6.0)
+        run: |
+          uvx --from skill-eval-harness==0.6.0 skill-benchmark validate --strict-leakage --check-ablations evals/shared-benchmark.json
+          uvx --from skill-eval-harness==0.6.0 skill-benchmark audit-manifest --fail-on-blockers evals/shared-benchmark.json > /dev/null
+          uvx --from skill-eval-harness==0.6.0 skill-benchmark validate --strict-leakage evals/visual-evidence-benchmark.json
       - name: Verify committed eval proof bundle
         run: python3 scripts/build_eval_evidence.py verify evals/results/visual-evidence-gpt-5.4.json

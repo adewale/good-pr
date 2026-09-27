@@ -3,14 +3,28 @@
 This repo participates in the shared Skill Eval Harness:
 
 - Repo: https://github.com/adewale/skill-eval-harness
-- Version: `>=0.6.0`
+- Version: `==0.6.0` (PyPI; the manifests' `harness.version` says the same)
 - Manifest: `evals/shared-benchmark.json`
 
-Install the harness from GitHub with [uv](https://docs.astral.sh/uv/):
+Install the pinned harness with [uv](https://docs.astral.sh/uv/):
 
 ```sh
-uv tool install git+https://github.com/adewale/skill-eval-harness.git@efe8eba1b20d41e02b81b11015e247b72438cc04
+uv tool install skill-eval-harness==0.6.0
 ```
+
+CI runs the model-free gate against that pin on every push and pull request, and
+`tests/test_eval_assertions.py` asks the pinned harness's `prepare` where each arm's
+skill lives:
+
+```sh
+uvx --from skill-eval-harness==0.6.0 skill-benchmark validate --strict-leakage --check-ablations evals/shared-benchmark.json
+uvx --from skill-eval-harness==0.6.0 skill-benchmark audit-manifest --fail-on-blockers evals/shared-benchmark.json
+```
+
+Paths in `evals/shared-benchmark.json` (`skill_paths`, ablation `skill_root`) resolve
+from the repository root, so they read `skills/good-pr/SKILL.md`. Any other manifest
+file resolves them from its own directory, which is why
+`evals/visual-evidence-benchmark.json` uses `../skills/good-pr/SKILL.md`.
 
 Splits:
 - `tune` — visible iteration cases.
@@ -64,6 +78,15 @@ Script assertions are deterministic repo-owned oracles and require `--allow-scri
 PR #11. Its `old_skill` arm points to the committed snapshot of `good-pr` at
 `8e613beba912411217ae89b82fadb081a4380bb5`; no sibling checkout or temporary
 manifest edit is required.
+
+The recorded run used Skill Eval Harness `efe8eba` (the head of harness PR #46,
+squash-merged to `main` as `b777124`, with an identical tree). It includes the
+Codex-home cleanup-race fix that 0.6.0 lacks, so install that commit to repeat the
+`run-codex` step:
+
+```sh
+uv tool install git+https://github.com/adewale/skill-eval-harness.git@b77712466775952c0fc3b9504da5b3945156179d
+```
 
 The recorded comparison uses `gpt-5.4` explicitly and low reasoning effort:
 

@@ -1,11 +1,18 @@
 from __future__ import annotations
 
 import json
+import os
 import re
+import shlex
+import shutil
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+# The harness release the manifests are validated against (evals/shared-harness.md).
+HARNESS_PIN = "skill-eval-harness==0.6.0"
 MANIFEST = json.loads((ROOT / "evals/shared-benchmark.json").read_text(encoding="utf-8"))
 VISUAL_MANIFEST = json.loads(
     (ROOT / "evals/visual-evidence-benchmark.json").read_text(encoding="utf-8")
@@ -17,6 +24,24 @@ def assertion(case_id: str, assertion_name: str) -> dict:
     return next(item for item in case["assertions"] if item["name"] == assertion_name)
 
 
+def harness_command() -> list[str]:
+    """The pinned harness CLI: $SKILL_BENCHMARK if set, else `skill-benchmark` on
+    PATH (CI installs the pin), else the pin through uvx. Never a silent skip: with
+    no harness available the path test fails and says how to install it."""
+    override = os.environ.get("SKILL_BENCHMARK")
+    if override:
+        return shlex.split(override)
+    if shutil.which("skill-benchmark"):
+        return ["skill-benchmark"]
+    if shutil.which("uvx"):
+        return ["uvx", "--from", HARNESS_PIN, "skill-benchmark"]
+    raise AssertionError(
+        f"the skill-path test runs the real harness; install it with "
+        f"`pip install {HARNESS_PIN}` (or `uv tool install {HARNESS_PIN}`), "
+        "or set SKILL_BENCHMARK to its command"
+    )
+
+
 def passes(assertion_spec: dict, output: str) -> bool:
     if assertion_spec["type"] == "contains_any":
         return any(value.casefold() in output.casefold() for value in assertion_spec["values"])
@@ -25,17 +50,59 @@ def passes(assertion_spec: dict, output: str) -> bool:
     raise AssertionError(f"unsupported assertion type: {assertion_spec['type']}")
 
 
-class EvalAssertionTests(unittest.TestCase):
-    def test_skill_paths_resolve_from_the_manifest_directory(self) -> None:
-        manifest_dir = ROOT / "evals"
-        for manifest in (MANIFEST, VISUAL_MANIFEST):
-            for key in ("skill_paths", "old_skill_paths"):
-                for relative_path in manifest.get(key, []):
-                    self.assertTrue((manifest_dir / relative_path).resolve().is_file(), relative_path)
-        for ablation in MANIFEST["ablations"]:
-            relative_path = ablation["target"]["skill_root"]
-            self.assertTrue((manifest_dir / relative_path).resolve().is_file(), relative_path)
+class HarnessPrepareTests(unittest.TestCase):
+    """Ask the real pinned harness where each arm's skill lives, instead of
+    re-deriving its path rules here. The harness resolves skill paths in
+    evals/shared-benchmark.json from the repository root but those in any other
+    manifest file from that file's directory, so the same `../skills/...` string
+    is right in one manifest and a nonexistent with-skill mount in the other."""
 
+    def prepared_rows(self, manifest: str, workdir: Path, *extra: str) -> list[dict]:
+        out = workdir / "tasks.jsonl"
+        command = [*harness_command(), "prepare", manifest, "--allow-missing-prompts",
+                   "--out", str(out), *extra]
+        proc = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=False)
+        self.assertEqual(proc.returncode, 0, f"{shlex.join(command)} failed:\n{proc.stderr}")
+        rows = [json.loads(line) for line in out.read_text(encoding="utf-8").splitlines() if line.strip()]
+        self.assertTrue(rows, "prepare emitted no tasks")
+        return rows
+
+    def assert_arm(self, rows: list[dict], variant: str, expected: list[Path]) -> None:
+        arm = [row for row in rows if row["variant"] == variant]
+        self.assertTrue(arm, f"prepare emitted no {variant} tasks")
+        for row in arm:
+            self.assertEqual([Path(p) for p in row["skill_paths"]], [p.resolve() for p in expected],
+                             f"{row['case_id']}/{variant}")
+            for path in row["skill_paths"]:
+                self.assertTrue(Path(path).is_file(), f"{row['case_id']}/{variant} mounts missing {path}")
+
+    def test_shared_benchmark_mounts_the_real_skill_and_every_ablation(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            workdir = Path(td)
+            rows = self.prepared_rows(
+                "evals/shared-benchmark.json", workdir,
+                "--include-ablations", "--ablation-dir", str(workdir / "ablations"))
+            self.assert_arm(rows, "with_skill", [ROOT / "skills/good-pr/SKILL.md"])
+            self.assertTrue(all(not row["skill_paths"] for row in rows if row["variant"] == "without_skill"))
+            for ablation in MANIFEST["ablations"]:
+                variant = f"ablation:{ablation['id']}"
+                arm = [row for row in rows if row["variant"] == variant]
+                self.assertTrue(arm, f"prepare emitted no {variant} tasks")
+                for row in arm:
+                    self.assertTrue(row["skill_paths"], f"{row['case_id']}/{variant}")
+                    for path in row["skill_paths"]:
+                        self.assertTrue(Path(path).is_file(), f"{row['case_id']}/{variant} mounts missing {path}")
+                        self.assertIn(workdir / "ablations", Path(path).parents)
+
+    def test_visual_benchmark_mounts_the_real_skill_and_the_frozen_baseline(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            rows = self.prepared_rows(
+                "evals/visual-evidence-benchmark.json", Path(td), "--include-old-skill")
+            self.assert_arm(rows, "with_skill", [ROOT / "skills/good-pr/SKILL.md"])
+            self.assert_arm(rows, "old_skill", [ROOT / "evals/baselines/good-pr-8e613be/SKILL.md"])
+
+
+class EvalAssertionTests(unittest.TestCase):
     def test_honest_baseline_negative_guard_understands_negation(self) -> None:
         pattern = assertion(
             "neg-new-surface-no-fake-before",

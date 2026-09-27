@@ -47,6 +47,20 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- `evals/shared-benchmark.json` points `skill_paths` and every ablation
+  `skill_root` at `skills/good-pr/SKILL.md` again. The harness resolves that
+  file's paths from the repository root, so `../skills/...` made `prepare`
+  mount a nonexistent with-skill skill; the old unit test asserted
+  manifest-relative resolution and stayed green. The test now runs the pinned
+  harness's `prepare` and checks every arm's skill files exist
+- Ablations `no-evidence-provenance` and `no-template` target the current
+  `SKILL.md` text again (they no longer materialized under `--check-ablations`)
+- Trigger cases declare `should_trigger` and the judge-only holdout/holdback
+  judges are `"gate": true`, so the manifest validates on harness `main` as well
+  as 0.6.0. The harness is pinned to `skill-eval-harness==0.6.0` in
+  `evals/shared-harness.md`, the manifest, and a new CI gate
+  (`validate --strict-leakage --check-ablations`, `audit-manifest --fail-on-blockers`)
+
 - Visual-evidence lint ignores commented, fenced, indented, and inline-code
   placeholders; recognizes GitHub recording attachments and reference images;
   and requires explicit generated-output classification
