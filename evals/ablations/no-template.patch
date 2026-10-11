@@ -1,4 +1,4 @@
-@@ -220,7 +220,0 @@
+@@ -207,7 +207,0 @@
 -See `references/pr-template.md` for a fill-in template. The key sections:
 -
 -- **What** — one-sentence summary
@@ -6,6 +6,6 @@
 -- **How** — approach taken, alternatives considered
 -- **Testing** — what you tested, how, and evidence it works
 -- **Risk** — what could go wrong and how you mitigated it
-@@ -320,2 +320,0 @@
+@@ -307,2 +307,0 @@
 -4. **Help write the description** — use `references/pr-template.md` as a
 -   starting point and fill it in together

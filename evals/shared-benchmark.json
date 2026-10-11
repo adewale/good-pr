@@ -4,10 +4,10 @@
   "harness": {
     "name": "skill-eval-harness",
     "url": "https://github.com/adewale/skill-eval-harness",
-    "version": ">=0.6.0"
+    "version": "==0.6.0"
   },
   "skill_paths": [
-    "../skills/good-pr/SKILL.md"
+    "skills/good-pr/SKILL.md"
   ],
   "old_skill_paths": [],
   "variants": [
@@ -502,6 +502,7 @@
       "id": "trig-review-pr",
       "split": "tune",
       "kind": "trigger",
+      "should_trigger": true,
       "prompt": "Trigger decision eval. User prompt: review my PR before I submit\n\nReturn exactly one label first: TRIGGER or NO_TRIGGER. Then give one short reason.",
       "expected_behavior": [
         "Should return TRIGGER for this skill."
@@ -528,6 +529,7 @@
       "id": "trig-pr-description",
       "split": "tune",
       "kind": "trigger",
+      "should_trigger": true,
       "prompt": "Trigger decision eval. User prompt: write a PR description\n\nReturn exactly one label first: TRIGGER or NO_TRIGGER. Then give one short reason.",
       "expected_behavior": [
         "Should return TRIGGER for this skill."
@@ -554,6 +556,7 @@
       "id": "trig-first-oss",
       "split": "tune",
       "kind": "trigger",
+      "should_trigger": true,
       "prompt": "Trigger decision eval. User prompt: first OSS contribution\n\nReturn exactly one label first: TRIGGER or NO_TRIGGER. Then give one short reason.",
       "expected_behavior": [
         "Should return TRIGGER for this skill."
@@ -580,6 +583,7 @@
       "id": "trig-commit-message",
       "split": "tune",
       "kind": "trigger",
+      "should_trigger": false,
       "prompt": "Trigger decision eval. User prompt: write a commit message\n\nReturn exactly one label first: TRIGGER or NO_TRIGGER. Then give one short reason.",
       "expected_behavior": [
         "Should return NO_TRIGGER for this skill."
@@ -606,6 +610,7 @@
       "id": "trig-architecture-review",
       "split": "tune",
       "kind": "trigger",
+      "should_trigger": false,
       "prompt": "Trigger decision eval. User prompt: review this code architecture\n\nReturn exactly one label first: TRIGGER or NO_TRIGGER. Then give one short reason.",
       "expected_behavior": [
         "Should return NO_TRIGGER for this skill."
@@ -632,6 +637,7 @@
       "id": "trig-triage-issues",
       "split": "tune",
       "kind": "trigger",
+      "should_trigger": false,
       "prompt": "Trigger decision eval. User prompt: triage these GitHub issues\n\nReturn exactly one label first: TRIGGER or NO_TRIGGER. Then give one short reason.",
       "expected_behavior": [
         "Should return NO_TRIGGER for this skill."
@@ -667,6 +673,7 @@
         {
           "name": "qualitative-review",
           "type": "judge",
+          "gate": true,
           "rubric": [
             "Security test quality",
             "Urgency handling"
@@ -695,6 +702,7 @@
         {
           "name": "private-holdback-review",
           "type": "judge",
+          "gate": true,
           "rubric": [
             "Use the private answer key; do not rely on public manifest wording."
           ]
@@ -1425,7 +1433,7 @@
       "mechanism": "section",
       "class": "instructions",
       "target": {
-        "skill_root": "../skills/good-pr/SKILL.md",
+        "skill_root": "skills/good-pr/SKILL.md",
         "heading": "### 4. Tests That Prove the Fix"
       },
       "notes": "Materialized removal: runner-visible skill tree is altered by the declared mechanism/target."
@@ -1448,7 +1456,7 @@
       "mechanism": "section",
       "class": "instructions",
       "target": {
-        "skill_root": "../skills/good-pr/SKILL.md",
+        "skill_root": "skills/good-pr/SKILL.md",
         "heading": "### 7. Trust Is Earned"
       },
       "notes": "Materialized removal: runner-visible skill tree is altered by the declared mechanism/target."
@@ -1471,7 +1479,7 @@
       "mechanism": "section",
       "class": "instructions",
       "target": {
-        "skill_root": "../skills/good-pr/SKILL.md",
+        "skill_root": "skills/good-pr/SKILL.md",
         "heading": "### 2. Visual Evidence"
       },
       "notes": "Materialized removal: runner-visible skill tree is altered by the declared mechanism/target."
@@ -1498,10 +1506,10 @@
       "mechanism": "list_item",
       "class": "instructions",
       "target": {
-        "skill_root": "../skills/good-pr/SKILL.md",
+        "skill_root": "skills/good-pr/SKILL.md",
         "section": "### 2. Visual Evidence",
         "contains": [
-          "regeneration command"
+          "Programmatically generated output"
         ]
       },
       "notes": "Materialized removal: runner-visible skill tree is altered by the declared mechanism/target."
@@ -1525,7 +1533,7 @@
       "mechanism": "patch",
       "class": "instructions",
       "target": {
-        "skill_root": "../skills/good-pr/SKILL.md",
+        "skill_root": "skills/good-pr/SKILL.md",
         "patch": "evals/ablations/no-template.patch"
       }
     },
@@ -1549,7 +1557,7 @@
       "mechanism": "section",
       "class": "instructions",
       "target": {
-        "skill_root": "../skills/good-pr/SKILL.md",
+        "skill_root": "skills/good-pr/SKILL.md",
         "heading": "### 5. Scoped and Safe"
       },
       "notes": "Materialized removal: runner-visible skill tree is altered by the declared mechanism/target."
