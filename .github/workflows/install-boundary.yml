@@ -31,5 +31,5 @@ jobs:
           uvx --from skill-eval-harness==0.6.0 skill-benchmark validate --strict-leakage --check-ablations evals/shared-benchmark.json
           uvx --from skill-eval-harness==0.6.0 skill-benchmark audit-manifest --fail-on-blockers evals/shared-benchmark.json > /dev/null
           uvx --from skill-eval-harness==0.6.0 skill-benchmark validate --strict-leakage evals/visual-evidence-benchmark.json
-      - name: Verify committed eval proof bundle
-        run: python3 scripts/build_eval_evidence.py verify evals/results/visual-evidence-gpt-5.4.json
+      - name: Verify archived eval proof bundle at its recorded source revision
+        run: python3 scripts/build_eval_evidence.py verify --historical evals/results/visual-evidence-gpt-5.4.json

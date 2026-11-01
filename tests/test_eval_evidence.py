@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import io
 import json
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts/build_eval_evidence.py"
@@ -18,6 +21,42 @@ SPEC.loader.exec_module(MODULE)
 
 
 class EvalEvidenceTests(unittest.TestCase):
+    def test_default_verification_rejects_a_different_current_skill(self) -> None:
+        real_git = MODULE.git
+
+        def changed_head(*args: str) -> str:
+            return "different-tree" if args == ("rev-parse", "HEAD:skills/good-pr") else real_git(*args)
+
+        with (
+            patch.object(MODULE, "git", side_effect=changed_head),
+            self.assertRaisesRegex(SystemExit, "installed skill tree changed"),
+        ):
+            MODULE.verify_summary(ROOT / "evals/results/visual-evidence-gpt-5.4.json")
+
+    def test_historical_verification_preserves_archived_source_scope(self) -> None:
+        real_git = MODULE.git
+
+        def changed_head(*args: str) -> str:
+            if args == ("rev-parse", "HEAD:skills/good-pr"):
+                self.fail("Historical verification must not substitute the current skill for recorded source")
+            return real_git(*args)
+
+        output = io.StringIO()
+        with patch.object(MODULE, "git", side_effect=changed_head), redirect_stdout(output):
+            self.assertEqual(0, MODULE.verify_summary(
+                ROOT / "evals/results/visual-evidence-gpt-5.4.json", historical=True,
+            ))
+        self.assertIn("does not evaluate the current skill", output.getvalue())
+
+    def test_historical_verification_still_rejects_corrupt_artifacts(self) -> None:
+        with (
+            patch.object(MODULE, "sha256_file", return_value="0" * 64),
+            self.assertRaisesRegex(SystemExit, "manifest hash mismatch"),
+        ):
+            MODULE.verify_summary(
+                ROOT / "evals/results/visual-evidence-gpt-5.4.json", historical=True,
+            )
+
     def test_repo_relative_accepts_cli_relative_path(self) -> None:
         self.assertEqual(
             Path("evals/visual-evidence-benchmark.json"),

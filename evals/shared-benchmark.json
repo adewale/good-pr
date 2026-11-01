@@ -1409,6 +1409,70 @@
         "outcome",
         "style"
       ]
+    },
+    {
+      "id": "tune-retire-validator-callers",
+      "split": "tune",
+      "kind": "pr-review",
+      "prompt": "Review a PR deleting scripts/legacy-check.py. The workflow no longer calls it, but AGENTS.md still requires python scripts/legacy-check.py before every contribution and package.json check still invokes it. The replacement is python scripts/validate.py. The old benchmark archive records successful runs of legacy-check.py. What belongs in this PR?",
+      "expected_behavior": [
+        "Require updates to both live AGENTS.md instructions and package.json callers and verification of the surviving validate.py command.",
+        "Preserve clearly dated historical benchmark evidence rather than rewriting it as a run of the replacement.",
+        "Avoid adding an alias or replacement checker solely to keep the retired ritual alive."
+      ],
+      "assertions": [
+        {
+          "name": "maintenance-evidence",
+          "type": "judge",
+          "gate": true,
+          "rubric": [
+            "Require updates to both live AGENTS.md instructions and package.json callers and verification of the surviving validate.py command.",
+            "Preserve clearly dated historical benchmark evidence rather than rewriting it as a run of the replacement.",
+            "Avoid adding an alias or replacement checker solely to keep the retired ritual alive."
+          ]
+        }
+      ],
+      "tags": [
+        "maintenance",
+        "evidence-scope"
+      ],
+      "domain": "pull-request-quality",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
+    },
+    {
+      "id": "tune-pr-evidence-revisions",
+      "split": "tune",
+      "kind": "pr-review",
+      "prompt": "Write the testing note for a PR at head c3. A benchmark at a1 passed last month, local unit tests at b2 passed today, and the follow-up c3 only changes contributor prose. CI for c3 is queued. The current draft says All checks passed; confidence 10/10.",
+      "expected_behavior": [
+        "State the a1 benchmark, b2 local tests, and queued c3 CI with their distinct revision scopes.",
+        "Remove the all-checks-passed claim and unsupported confidence score; do not fabricate a c3 local run or claim final-head CI passed.",
+        "Keep the note short and explain the docs-only follow-up without treating it as proof of a test run."
+      ],
+      "assertions": [
+        {
+          "name": "maintenance-evidence",
+          "type": "judge",
+          "gate": true,
+          "rubric": [
+            "State the a1 benchmark, b2 local tests, and queued c3 CI with their distinct revision scopes.",
+            "Remove the all-checks-passed claim and unsupported confidence score; do not fabricate a c3 local run or claim final-head CI passed.",
+            "Keep the note short and explain the docs-only follow-up without treating it as proof of a test run."
+          ]
+        }
+      ],
+      "tags": [
+        "maintenance",
+        "evidence-scope"
+      ],
+      "domain": "pull-request-quality",
+      "difficulty": "core",
+      "success_goals": [
+        "outcome"
+      ]
     }
   ],
   "ablations": [

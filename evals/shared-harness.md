@@ -133,6 +133,13 @@ Treat visible tune-case statistics as descriptive effect sizes, not as holdout
 or confirmatory significance claims. The proof builder deliberately omits
 inferential p-values for these tuned cases.
 
+For ongoing CI, verify the archived bundle with `verify --historical` and the same
+summary path. This still checks the recorded immutable source trees, output and
+manifest hashes, baseline snapshot, and canonical statistics. It does not claim
+the current skill was evaluated. Default `verify` and `build` retain the matching,
+clean current-skill requirement. A new claim about model performance at a later
+skill revision needs a fresh run; do not rewrite the old receipt to name new bytes.
+
 Two sequential replication attempts on pre-fix Harness commit `96013a5`
 reproduced the temporary Codex-home cleanup race tracked in
 [Skill Eval Harness #45](https://github.com/adewale/skill-eval-harness/issues/45),
