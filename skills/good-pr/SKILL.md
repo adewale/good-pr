@@ -199,6 +199,14 @@ severity. For security fixes, use a neutral, specific title, state concrete
 impact/evidence, and let maintainers choose urgency and triage. Panic PRs that
 break more than they fix destroy trust faster than anything.
 
+When retiring a tool or command, search its callers and instructions in workflows,
+hooks, package scripts, docs, and contributor guidance. Resolve live references in
+the same change; keep historical evidence clearly dated. For example, deleting a
+validator while leaving `AGENTS.md` telling contributors to run it breaks the
+documented contribution path. Name the surviving command and verify it, or state
+that the step is intentionally removed. Do not build a replacement checker merely
+to preserve an obsolete ritual.
+
 ### 6. A Description That Stands Alone
 
 The PR description is your pitch. A maintainer should understand *everything*
@@ -211,6 +219,13 @@ See `references/pr-template.md` for a fill-in template. The key sections:
 - **How** — approach taken, alternatives considered
 - **Testing** — what you tested, how, and evidence it works
 - **Risk** — what could go wrong and how you mitigated it
+
+Tie verification claims to the revision and environment checked. A historical
+benchmark, local test run, and CI run at the final PR head answer different
+questions. For example: "Historical benchmark at `<sha>` retained; local validation
+passed before this docs-only commit; CI for the current head is pending." Check
+the latest head after any follow-up push. Report pending, skipped, or failed checks
+as such; a prose review score cannot substitute for test or CI evidence.
 
 ### 7. Trust Is Earned
 

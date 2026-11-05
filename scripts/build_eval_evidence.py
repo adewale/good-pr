@@ -411,7 +411,7 @@ def build(args: argparse.Namespace) -> int:
     return verify_summary(summary_path)
 
 
-def verify_summary(summary_path: Path) -> int:
+def verify_summary(summary_path: Path, *, historical: bool = False) -> int:
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
     if summary.get("schema_version") != 3:
         raise SystemExit("unsupported eval proof schema")
@@ -534,11 +534,12 @@ def verify_summary(summary_path: Path) -> int:
         raise SystemExit("annotated source commit has the wrong skill tree")
     if baseline_tree != revisions["baseline_skill_git_tree"]:
         raise SystemExit("baseline source commit has the wrong skill tree")
-    current_tree = git("rev-parse", "HEAD:skills/good-pr")
-    if current_tree != annotated_tree:
-        raise SystemExit("installed skill tree changed after the annotated source commit")
-    if git("status", "--porcelain", "--untracked-files=all", "--", "skills/good-pr"):
-        raise SystemExit("installed skill has uncommitted changes")
+    if not historical:
+        current_tree = git("rev-parse", "HEAD:skills/good-pr")
+        if current_tree != annotated_tree:
+            raise SystemExit("installed skill tree changed after the annotated source commit")
+        if git("status", "--porcelain", "--untracked-files=all", "--", "skills/good-pr"):
+            raise SystemExit("installed skill has uncommitted changes")
     if (
         hash_git_tree(revisions["annotated_good_pr_git_sha"], "skills/good-pr")
         != revisions["annotated_skill_content_sha256"]
@@ -583,6 +584,11 @@ def verify_summary(summary_path: Path) -> int:
         f"OK: regraded {expected} outputs and verified canonical statistics, "
         "run-matrix hashes, and source annotations"
     )
+    if historical:
+        print(
+            f"Scope: archived evidence for {revisions['annotated_good_pr_git_sha']}; "
+            "does not evaluate the current skill or attest execution source bytes"
+        )
     return 0
 
 
@@ -604,6 +610,10 @@ def parse_args() -> argparse.Namespace:
     build_parser.add_argument("--out-dir", type=Path, default=ROOT / "evals/results")
     verify_parser = subparsers.add_parser("verify")
     verify_parser.add_argument("summary", type=Path)
+    verify_parser.add_argument(
+        "--historical", action="store_true",
+        help="Verify archived evidence against its recorded revisions, without claiming it covers the current skill",
+    )
     return parser.parse_args()
 
 
@@ -611,7 +621,7 @@ def main() -> int:
     args = parse_args()
     if args.command == "build":
         return build(args)
-    return verify_summary(args.summary)
+    return verify_summary(args.summary, historical=args.historical)
 
 
 if __name__ == "__main__":

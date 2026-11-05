@@ -11,6 +11,8 @@ and check it off or note why it doesn't apply.
 - [ ] **Matches project style** — naming, structure, error handling follow
       existing patterns
 - [ ] **No new dependencies** — or dependency addition was discussed first
+- [ ] **Retired tooling** — live callers and contributor instructions updated;
+      surviving commands verified and historical records kept clearly dated
 
 ## Testing
 
@@ -54,6 +56,8 @@ and check it off or note why it doesn't apply.
 - [ ] **Why** — root cause or motivation explained
 - [ ] **How** — approach described, alternatives noted if relevant
 - [ ] **Testing** — test strategy and verification steps documented
+- [ ] **Evidence scope** — historical results, local checks, and CI identify the
+      revisions they cover; latest-head CI status is stated accurately
 - [ ] **Risk** — potential impact areas identified and mitigated
 
 ## Final Check
